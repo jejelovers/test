@@ -161,6 +161,66 @@ class StatisticPlugin
     }
 
     /**
+     * AJAX handler to DROP legacy categories table if empty, then recreate and seed defaults
+     */
+    public function ajax_drop_empty_categories_table()
+    {
+        // Verify nonce
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'drop_empty_categories_table_nonce')) {
+            wp_send_json_error('Nonce verification failed.');
+            return;
+        }
+
+        // Check permission
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized access.');
+            return;
+        }
+
+        global $wpdb;
+        $categories_table = $this->categories_table;
+        $fields_table = $this->fields_table;
+
+        // Ensure the categories table exists
+        $table_exists = $wpdb->get_var($wpdb->prepare(
+            "SHOW TABLES LIKE %s",
+            $categories_table
+        ));
+
+        if ($table_exists !== $categories_table) {
+            wp_send_json_error('Tabel kategori tidak ditemukan.');
+            return;
+        }
+
+        // Only allow drop when table is empty
+        $category_count = intval($wpdb->get_var("SELECT COUNT(*) FROM {$categories_table}"));
+        if ($category_count > 0) {
+            wp_send_json_error('Tabel kategori tidak kosong sehingga tidak dapat dihapus.');
+            return;
+        }
+
+        // Also drop fields table if it exists and is empty
+        $fields_exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $fields_table));
+        if ($fields_exists === $fields_table) {
+            $fields_count = intval($wpdb->get_var("SELECT COUNT(*) FROM {$fields_table}"));
+            if ($fields_count === 0) {
+                $wpdb->query("DROP TABLE IF EXISTS {$fields_table}");
+            }
+        }
+
+        // Drop the empty categories table
+        $wpdb->query("DROP TABLE IF EXISTS {$categories_table}");
+
+        try {
+            // Recreate tables and seed defaults
+            $this->create_database_tables();
+            wp_send_json_success('Tabel kategori legacy yang kosong berhasil dihapus dan dibuat ulang.');
+        } catch (Exception $e) {
+            wp_send_json_error('Gagal membuat ulang tabel setelah penghapusan: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Create the custom database tables
      * Membuat tabel database untuk menyimpan data statistik, kategori, dan field custom
      */
@@ -357,6 +417,9 @@ class StatisticPlugin
         add_action('wp_ajax_save_field', array($this, 'handle_save_field'));
         add_action('wp_ajax_delete_field', array($this, 'handle_delete_field'));
         add_action('wp_ajax_get_category_fields', array($this, 'handle_get_category_fields'));
+        
+        // AJAX action untuk hapus tabel kategori legacy (hanya jika kosong)
+        add_action('wp_ajax_drop_empty_categories_table', array($this, 'ajax_drop_empty_categories_table'));
 
         // REST API endpoints
         add_action('rest_api_init', array($this, 'register_rest_routes'));
@@ -1858,7 +1921,6 @@ class StatisticPlugin
                     color: #d63638;
                     border-color: #d63638;
                 }
-
                 .btn-delete:hover {
                     background: #d63638;
                     color: #fff;
@@ -2203,6 +2265,9 @@ class StatisticPlugin
                     <button class="btn-add-category" onclick="openCategoryModal()">
                         ➕ Tambah Kategori Baru
                     </button>
+                    <button class="btn-delete" onclick="dropEmptyCategoriesTable()" title="Hapus tabel kategori legacy jika kosong">
+                        🗑️ Hapus Tabel Kategori (Legacy)
+                    </button>
                 </div>
 
 
@@ -2316,8 +2381,6 @@ class StatisticPlugin
                     <?php endif; ?>
                 </div>
             </div>
-
-
             <div id="category-modal" class="modal-overlay">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -2725,6 +2788,41 @@ class StatisticPlugin
                     e.target.style.display = 'none';
                 }
             });
+
+            // Hapus tabel kategori legacy jika kosong
+            function dropEmptyCategoriesTable() {
+                if (!confirm('Apakah Anda yakin ingin menghapus tabel kategori legacy (hanya jika kosong)?')) {
+                    return;
+                }
+
+                const btns = document.querySelectorAll('.btn-delete');
+                btns.forEach(b => b.disabled = true);
+
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'drop_empty_categories_table',
+                        nonce: '<?php echo wp_create_nonce('drop_empty_categories_table_nonce'); ?>'
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('✅ ' + data.data);
+                            location.reload();
+                        } else {
+                            alert('❌ ' + data.data);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('❌ Terjadi kesalahan saat menghapus tabel kategori.');
+                    })
+                    .finally(() => {
+                        btns.forEach(b => b.disabled = false);
+                    });
+            }
         </script>
         <?php
     }
@@ -3652,7 +3750,6 @@ class StatisticPlugin
 
             echo '</div>';
         }
-
         // Add custom CSS for better styling
         echo '<style>
             .statistic-table-wrapper {
@@ -4144,7 +4241,6 @@ class StatisticPlugin
                     }
                 }
             </style>
-
             <div class="statistic-form-card">
                 <div class="statistic-form-header">
                     <h2><?php echo esc_html($form_title); ?></h2>
@@ -4641,7 +4737,6 @@ class StatisticPlugin
                     padding: 0;
                     margin: 0;
                 }
-
                 .stats-list li {
                     display: flex;
                     justify-content: space-between;
@@ -5142,7 +5237,6 @@ class StatisticPlugin
                     border-radius: 50%;
                     background: currentColor;
                 }
-
                 .actions-cell {
                     white-space: nowrap;
                 }
@@ -5526,7 +5620,6 @@ class StatisticPlugin
                 </div>
             </div>
         </div>
-
         <script>
             // Toggle data details
             function toggleDataDetails(element) {
@@ -5960,7 +6053,6 @@ class StatisticPlugin
                         </div>
                     </div>
                 </div>
-
                 <!-- Shortcodes Tab -->
                 <div id="shortcodes-tab" class="tab-content">
                     <div class="doc-section">
@@ -6461,7 +6553,6 @@ class StatisticPlugin
                         color: #495057;
                         font-size: 16px;
                     }
-
                     .input-type-card li {
                         margin-bottom: 5px;
                         color: #6c757d;

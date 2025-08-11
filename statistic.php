@@ -2766,6 +2766,9 @@ class StatisticPlugin
                     <button class="btn-add-category" onclick="openCategoryModal()">
                         ➕ Tambah Kategori Baru
                     </button>
+                    <button class="btn-delete" onclick="dropEmptyCategoriesTable()" title="Hapus tabel kategori legacy jika kosong">
+                        🗑️ Hapus Tabel Kategori (Legacy)
+                    </button>
                 </div>
 
                 <!-- Categories Grid -->
@@ -3266,6 +3269,40 @@ class StatisticPlugin
                     e.target.style.display = 'none';
                 }
             });
+
+            // Hapus tabel kategori legacy jika kosong
+            function dropEmptyCategoriesTable() {
+                if (!confirm('Apakah Anda yakin ingin menghapus tabel kategori legacy (hanya jika kosong)?')) {
+                    return;
+                }
+                const btns = document.querySelectorAll('.btn-delete');
+                btns.forEach(b => b.disabled = true);
+
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'drop_empty_categories_table',
+                        nonce: '<?php echo wp_create_nonce('drop_empty_categories_table_nonce'); ?>'
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('✅ ' + data.data);
+                            location.reload();
+                        } else {
+                            alert('❌ ' + data.data);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('❌ Terjadi kesalahan saat menghapus tabel kategori.');
+                    })
+                    .finally(() => {
+                        btns.forEach(b => b.disabled = false);
+                    });
+            }
         </script>
         <?php
     }
