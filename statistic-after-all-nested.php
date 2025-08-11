@@ -4932,11 +4932,15 @@ class StatisticPlugin
     {
         global $wpdb;
 
-        // Handle search and filters
-        $search = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
-        $year_filter = isset($_GET['year_filter']) ? intval($_GET['year_filter']) : '';
-        $category_filter = isset($_GET['category_filter']) ? sanitize_text_field($_GET['category_filter']) : '';
-        $status_filter = isset($_GET['status_filter']) ? sanitize_text_field($_GET['status_filter']) : '';
+        // Handle search and filters (follow statistic.php param names, keep fallback)
+        $search = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : (isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '');
+        $filter_year = isset($_GET['filter_year']) ? intval($_GET['filter_year']) : (isset($_GET['year_filter']) ? intval($_GET['year_filter']) : '');
+        $filter_category = isset($_GET['filter_category']) ? sanitize_text_field($_GET['filter_category']) : (isset($_GET['category_filter']) ? sanitize_text_field($_GET['category_filter']) : '');
+        $filter_status = isset($_GET['filter_status']) ? sanitize_text_field($_GET['filter_status']) : (isset($_GET['status_filter']) ? sanitize_text_field($_GET['status_filter']) : '');
+        // Backward-compat aliases
+        $year_filter = $filter_year;
+        $category_filter = $filter_category;
+        $status_filter = $filter_status;
 
         // Pagination
         $per_page = 20;
@@ -5421,12 +5425,12 @@ class StatisticPlugin
                         <div class="filters-grid">
                             <div class="filter-group">
                                 <label class="filter-label">🔍 Pencarian</label>
-                                <input type="text" name="search" value="<?php echo esc_attr($search); ?>"
-                                    placeholder="Cari kategori atau sumber..." class="filter-input">
+                                                                 <input type="text" name="s" value="<?php echo esc_attr($search); ?>"
+                                     placeholder="Cari kategori atau sumber..." class="filter-input">
                             </div>
                             <div class="filter-group">
                                 <label class="filter-label">📅 Tahun</label>
-                                <select name="year_filter" class="filter-select">
+                                                                 <select name="filter_year" class="filter-select">
                                     <option value="">Semua Tahun</option>
                                     <?php foreach ($available_years as $year): ?>
                                         <option value="<?php echo esc_attr($year); ?>" <?php selected($year_filter, $year); ?>>
@@ -5437,7 +5441,7 @@ class StatisticPlugin
                             </div>
                             <div class="filter-group">
                                 <label class="filter-label">🏷️ Kategori</label>
-                                <select name="category_filter" class="filter-select">
+                                                                 <select name="filter_category" class="filter-select">
                                     <option value="">Semua Kategori</option>
                                     <?php foreach ($available_categories as $cat): ?>
                                         <option value="<?php echo esc_attr($cat); ?>" <?php selected($category_filter, $cat); ?>>
@@ -5448,7 +5452,7 @@ class StatisticPlugin
                             </div>
                             <div class="filter-group">
                                 <label class="filter-label">📊 Status</label>
-                                <select name="status_filter" class="filter-select">
+                                                                 <select name="filter_status" class="filter-select">
                                     <option value="">Semua Status</option>
                                     <option value="published" <?php selected($status_filter, 'published'); ?>>Dipublikasi</option>
                                     <option value="draft" <?php selected($status_filter, 'draft'); ?>>Draft</option>
@@ -5512,27 +5516,44 @@ class StatisticPlugin
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="data-preview">
-                                                <?php
-                                                $data = json_decode($row->data, true);
-                                                if (!empty($data)) {
-                                                    $preview_items = array_slice($data, 0, 3, true);
-                                                    foreach ($preview_items as $key => $value) {
-                                                        echo esc_html($key) . ': ' . esc_html($value) . '<br>';
-                                                    }
-                                                    if (count($data) > 3) {
-                                                        echo '... +' . (count($data) - 3) . ' lainnya';
-                                                    }
-                                                } else {
-                                                    echo '<em>Tidak ada data</em>';
-                                                }
-                                                ?>
-                                            </div>
+                                                                                         <div class="data-preview">
+                                                 <?php
+                                                 $data = json_decode($row->data, true) ?: array();
+                                                 $is_dynamic_rw = $this->is_dynamic_rw_category($row->category);
+                                                 if (!empty($data)) {
+                                                     $count = 0;
+                                                     $max_display = 4;
+                                                     echo '<div class="data-summary">';
+                                                     foreach ($data as $key => $value) {
+                                                         if ($count >= $max_display) break;
+                                                         $display_key = $key;
+                                                         if ($is_dynamic_rw && strpos($key, 'rw_') === 0) {
+                                                             $display_key = 'RW ' . str_replace('rw_', '', $key);
+                                                         } else {
+                                                             $category_fields = $this->get_category_fields();
+                                                             if (isset($category_fields[$row->category][$key])) {
+                                                                 $display_key = $category_fields[$row->category][$key];
+                                                             }
+                                                         }
+                                                         echo '<span class="data-item ' . ($is_dynamic_rw ? 'rw' : '') . '">'
+                                                              . esc_html(wp_trim_words($display_key, 2, '')) . ': '
+                                                              . esc_html($value) . '</span>';
+                                                         $count++;
+                                                     }
+                                                     echo '</div>';
+                                                     if (count($data) > $max_display) {
+                                                         echo '<div class="data-more">+' . (count($data) - $max_display) . ' data lainnya</div>';
+                                                     }
+                                                 } else {
+                                                     echo '<span style="color: #d63638; font-style: italic;">Data kosong</span>';
+                                                 }
+                                                 ?>
+                                             </div>
                                         </td>
                                         <td>
-                                            <div class="source-info" title="<?php echo esc_attr($row->sumber); ?>">
-                                                <?php echo !empty($row->sumber) ? esc_html($row->sumber) : '<em>Tidak ada sumber</em>'; ?>
-                                            </div>
+                                                                                         <div class="source-text">
+                                                 <?php echo !empty($row->sumber) ? esc_html($row->sumber) : '<em style="color: #646970;">Tidak ada sumber</em>'; ?>
+                                             </div>
                                         </td>
                                         <td>
                                             <?php echo esc_html(date('d M Y H:i', strtotime($row->updated_at))); ?>
@@ -5739,18 +5760,31 @@ class StatisticPlugin
                             <div class="step-card step-purple">
                                 <div class="step-number">4</div>
                                 <div class="step-content">
-                                    <h3>Isi Sumber Data (Opsional)</h3>
+                                    <h3>Tambah Kategori Baru (Opsional)</h3>
                                     <ul>
-                                        <li>Masukkan sumber data statistik</li>
-                                        <li>Contoh: "BPS Kabupaten", "Survei Desa 2024", "Data RT/RW"</li>
-                                        <li>Field ini opsional tapi disarankan untuk transparansi</li>
+                                        <li>Buka menu <strong>"Statistik Desa" → "Kelola Kategori & Field"</strong>.</li>
+                                        <li>Klik <strong>"Tambah Kategori"</strong>, lalu isi:
+                                            <ul>
+                                                <li><strong>Kode Kategori</strong>: huruf kecil/angka/underscore (contoh: <code>pendidikan_warga</code>)</li>
+                                                <li><strong>Nama Kategori</strong>: nama yang tampil ke pengguna</li>
+                                                <li><strong>Tipe Kategori</strong>:
+                                                    <ul>
+                                                        <li><strong>Regular</strong>: field statis per kategori</li>
+                                                        <li><strong>RW Dinamis</strong>: field RW dibuat dinamis saat input</li>
+                                                        <li><strong>Nested Gender</strong>: struktur data Laki-laki/Perempuan per field</li>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>Klik <strong>Simpan</strong>. Kategori baru akan muncul di dropdown kategori pada form input.</li>
+                                        <li>(Opsional) Kelola field: pilih kategori → <strong>Kelola Field</strong> → isi Kode Field dan Nama Field → <strong>Tambah</strong> → <strong>Simpan</strong>.</li>
                                     </ul>
                                 </div>
                             </div>
 
                             <!-- Step 5 -->
                             <div class="step-card step-indigo">
-                                <div class="step-number">5</div>
+                                <div class="step-number">6</div>
                                 <div class="step-content">
                                     <h3>Input Data Berdasarkan Kategori</h3>
 
@@ -5781,7 +5815,7 @@ class StatisticPlugin
 
                             <!-- Step 6 -->
                             <div class="step-card step-gray">
-                                <div class="step-number">6</div>
+                                <div class="step-number">7</div>
                                 <div class="step-content">
                                     <h3>Pengaturan Publikasi</h3>
                                     <ul>
@@ -5794,7 +5828,7 @@ class StatisticPlugin
 
                             <!-- Step 7 -->
                             <div class="step-card step-red">
-                                <div class="step-number">7</div>
+                                <div class="step-number">8</div>
                                 <div class="step-content">
                                     <h3>Simpan Data</h3>
                                     <ul>
@@ -6102,10 +6136,10 @@ class StatisticPlugin
                             <p>Untuk membuat halaman yang menampilkan semua statistik tahun 2024:</p>
                             <div class="code-block large">
                                 <pre><code>&lt;h2&gt;Statistik Desa Tahun 2024&lt;/h2&gt;
-[statistic_display year="2024"]
-
-&lt;h3&gt;Tabel Ringkasan&lt;/h3&gt;
-[statistic_table year="2024" limit="10"]</code></pre>
+[statistic_display year="2024" category="agama" show_source="true" show_year="true"]
+ 
+ &lt;h3&gt;Tabel Ringkasan&lt;/h3&gt;
+[statistic_table year="2024" limit="10" show_source="true"]</code></pre>
                                 <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
                             </div>
                         </div>
@@ -6117,18 +6151,18 @@ class StatisticPlugin
                                 <pre><code>&lt;div class="row"&gt;
   &lt;div class="col-md-6"&gt;
     &lt;h3&gt;Data Agama (Pie Chart)&lt;/h3&gt;
-    [statistic_chart year="2024" category="agama" type="pie"]
+    [statistic_chart year="2024" category="agama" type="pie" height="360"]
   &lt;/div&gt;
   &lt;div class="col-md-6"&gt;
     &lt;h3&gt;Data Jenis Kelamin (Bar Chart)&lt;/h3&gt;
-    [statistic_chart year="2024" category="jenis_kelamin" type="bar"]
+    [statistic_chart year="2024" category="jenis_kelamin" type="bar" height="360"]
   &lt;/div&gt;
 &lt;/div&gt;
 
 &lt;div class="row mt-4"&gt;
   &lt;div class="col-12"&gt;
     &lt;h3&gt;Data RW (Horizontal Bar)&lt;/h3&gt;
-    [statistic_chart year="2024" category="penerima_pemberian_makanan_tambahan" type="horizontalBar" height="300"]
+    [statistic_chart year="2024" category="penerima_pemberian_makanan_tambahan" type="horizontalBar" height="360"]
   &lt;/div&gt;
 &lt;/div&gt;</code></pre>
                                 <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
