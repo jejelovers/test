@@ -3255,21 +3255,21 @@ class StatisticPlugin
     {
         // Verifikasi nonce
         if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'statistic_delete_nonce')) {
-            wp_die('Nonce verification failed.');
+            wp_send_json_error('Nonce verification failed.');
         }
 
         // Cek permission
         if (!current_user_can('manage_options')) {
-            wp_die('Unauthorized access.');
+            wp_send_json_error('Unauthorized access.');
         }
 
         global $wpdb;
 
-        $year = intval($_POST['year']);
-        $category = sanitize_text_field($_POST['category']);
+        $year = intval($_POST['year'] ?? 0);
+        $category = sanitize_text_field($_POST['category'] ?? '');
 
         if (empty($year) || empty($category)) {
-            wp_die('Parameter tidak valid.');
+            wp_send_json_error('Parameter tidak valid.');
         }
 
         $result = $wpdb->delete(
@@ -3279,9 +3279,9 @@ class StatisticPlugin
         );
 
         if ($result !== false) {
-            wp_die('Data berhasil dihapus.');
+            wp_send_json_success('Data berhasil dihapus.');
         } else {
-            wp_die('Gagal menghapus data: ' . $wpdb->last_error);
+            wp_send_json_error('Gagal menghapus data: ' . $wpdb->last_error);
         }
     }
 
@@ -4924,53 +4924,43 @@ class StatisticPlugin
         <?php
     }
 
-    /**
-     * Admin list page
-     * Halaman admin untuk melihat daftar data
+        /**
+     * Admin list page - IMPROVED VERSION WITH BETTER TABLE DESIGN
+     * Halaman daftar data statistik dengan tabel yang lebih rapi dan modern
      */
     public function admin_list_page()
     {
         global $wpdb;
 
-        // Handle search and filters (follow statistic.php param names, keep fallback)
-        $search = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : (isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '');
-        $filter_year = isset($_GET['filter_year']) ? intval($_GET['filter_year']) : (isset($_GET['year_filter']) ? intval($_GET['year_filter']) : '');
-        $filter_category = isset($_GET['filter_category']) ? sanitize_text_field($_GET['filter_category']) : (isset($_GET['category_filter']) ? sanitize_text_field($_GET['category_filter']) : '');
-        $filter_status = isset($_GET['filter_status']) ? sanitize_text_field($_GET['filter_status']) : (isset($_GET['status_filter']) ? sanitize_text_field($_GET['status_filter']) : '');
-        // Backward-compat aliases
-        $year_filter = $filter_year;
-        $category_filter = $filter_category;
-        $status_filter = $filter_status;
+        // Handle search and filter
+        $search = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
+        $filter_year = isset($_GET['filter_year']) ? intval($_GET['filter_year']) : '';
+        $filter_category = isset($_GET['filter_category']) ? sanitize_text_field($_GET['filter_category']) : '';
+        $filter_status = isset($_GET['filter_status']) ? sanitize_text_field($_GET['filter_status']) : '';
 
-        // Pagination
-        $per_page = 20;
-        $current_page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
-        $offset = ($current_page - 1) * $per_page;
-
-        // Build WHERE conditions
+        // Build query with filters
         $where_conditions = array();
         $where_values = array();
 
         if (!empty($search)) {
             $where_conditions[] = "(category LIKE %s OR sumber LIKE %s)";
-            $where_values[] = '%' . $search . '%';
-            $where_values[] = '%' . $search . '%';
+            $where_values[] = '%' . $wpdb->esc_like($search) . '%';
+            $where_values[] = '%' . $wpdb->esc_like($search) . '%';
         }
 
-        if (!empty($year_filter)) {
+        if (!empty($filter_year)) {
             $where_conditions[] = "year = %d";
-            $where_values[] = $year_filter;
+            $where_values[] = $filter_year;
         }
 
-        if (!empty($category_filter)) {
+        if (!empty($filter_category)) {
             $where_conditions[] = "category = %s";
-            $where_values[] = $category_filter;
+            $where_values[] = $filter_category;
         }
 
-        if ($status_filter === 'published') {
-            $where_conditions[] = "is_published = 1";
-        } elseif ($status_filter === 'draft') {
-            $where_conditions[] = "is_published = 0";
+        if ($filter_status !== '') {
+            $where_conditions[] = "is_published = %d";
+            $where_values[] = intval($filter_status);
         }
 
         $where_clause = '';
@@ -4978,69 +4968,57 @@ class StatisticPlugin
             $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
         }
 
-        // Get total count for pagination
-        $count_query = "SELECT COUNT(*) FROM {$this->table_name} {$where_clause}";
+        $query = "SELECT * FROM {$this->table_name} {$where_clause} ORDER BY year DESC, category ASC";
+
         if (!empty($where_values)) {
-            $total_items = $wpdb->get_var($wpdb->prepare($count_query, $where_values));
+            $results = $wpdb->get_results($wpdb->prepare($query, $where_values));
         } else {
-            $total_items = $wpdb->get_var($count_query);
+            $results = $wpdb->get_results($query);
         }
 
-        $total_pages = ceil($total_items / $per_page);
-
-        // Get data
-        $data_query = "SELECT * FROM {$this->table_name} {$where_clause} ORDER BY year DESC, category ASC LIMIT %d OFFSET %d";
-        $query_values = array_merge($where_values, array($per_page, $offset));
-        $results = $wpdb->get_results($wpdb->prepare($data_query, $query_values));
-
-        // Get available years and categories for filters
-        $available_years = $wpdb->get_col("SELECT DISTINCT year FROM {$this->table_name} ORDER BY year DESC");
-        $available_categories = $wpdb->get_col("SELECT DISTINCT category FROM {$this->table_name} ORDER BY category ASC");
+        // Get unique years and categories for filters
+        $years = $wpdb->get_col("SELECT DISTINCT year FROM {$this->table_name} ORDER BY year DESC");
         $categories = $this->get_categories();
 
         ?>
         <div class="wrap">
             <style>
-                /* List Page Styling */
-                .list-container {
+                /* Modern Admin Table Styling */
+                .statistics-admin-container {
+                    background: #fff;
                     margin: 20px 0;
-                }
-
-                .list-header {
-                    background: white;
-                    padding: 25px;
                     border-radius: 8px;
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                    margin-bottom: 20px;
-                    border-left: 4px solid #007bff;
                 }
 
-                .list-header h1 {
+                .statistics-header {
+                    padding: 20px 25px;
+                    border-bottom: 1px solid #e1e5e9;
+                    background: #f8f9fa;
+                    border-radius: 8px 8px 0 0;
+                }
+
+                .statistics-header h1 {
                     margin: 0 0 10px 0;
-                    color: #2c3e50;
+                    color: #32373c;
                     font-size: 24px;
                     font-weight: 600;
                 }
 
-                .list-header .description {
-                    color: #6c757d;
+                .statistics-header .description {
+                    color: #646970;
                     margin: 0;
                     font-size: 14px;
                 }
 
-                .filters-section {
-                    background: white;
-                    padding: 20px;
-                    border-radius: 8px;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                    margin-bottom: 20px;
-                }
-
-                .filters-grid {
-                    display: grid;
-                    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+                .statistics-filters {
+                    padding: 20px 25px;
+                    background: #fafafa;
+                    border-bottom: 1px solid #e1e5e9;
+                    display: flex;
+                    flex-wrap: wrap;
                     gap: 15px;
-                    align-items: end;
+                    align-items: center;
                 }
 
                 .filter-group {
@@ -5048,137 +5026,73 @@ class StatisticPlugin
                     flex-direction: column;
                     gap: 5px;
                 }
-                .filters-grid .filter-group:last-child {
-                    flex-direction: row;
-                    align-items: center;
-                    gap: 10px;
-                    justify-content: flex-start;
+
+                .filter-group label {
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #646970;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
 
-                .filter-label {
+                .filter-group select,
+                .filter-group input[type="text"] {
+                    padding: 6px 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
                     font-size: 13px;
-                    font-weight: 500;
-                    color: #495057;
+                    min-width: 120px;
                 }
 
-                .filter-input,
-                .filter-select {
-                    padding: 8px 12px;
-                    border: 1px solid #ced4da;
-                    border-radius: 4px;
-                    font-size: 14px;
-                    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-                    width: 100%;
-                    min-width: 160px;
-                    height: 36px;
-                    box-sizing: border-box;
+                .filter-actions {
+                    margin-left: auto;
+                    display: flex;
+                    gap: 10px;
                 }
 
-                .filter-input:focus,
-                .filter-select:focus {
-                    outline: none;
-                    border-color: #007bff;
-                    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+                .statistics-content {
+                    padding: 0;
                 }
 
-                .btn-filter {
-                    background: #007bff;
-                    color: white;
-                    border: 1px solid #007bff;
-                    padding: 8px 16px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: 500;
-                    text-decoration: none;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 5px;
-                    height: fit-content;
-                }
-
-                .btn-filter:hover {
-                    background: #0056b3;
-                    border-color: #0056b3;
-                    color: white;
-                    text-decoration: none;
-                }
-
-                .btn-clear {
-                    background: #6c757d;
-                    color: white;
-                    border: 1px solid #6c757d;
-                    padding: 8px 16px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: 500;
-                    text-decoration: none;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 5px;
-                    height: fit-content;
-                    margin-left: 10px;
-                }
-
-                .btn-clear:hover {
-                    background: #545b62;
-                    border-color: #545b62;
-                    color: white;
-                    text-decoration: none;
-                }
-
-                .results-section {
-                    background: white;
-                    border-radius: 8px;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                    overflow: hidden;
-                }
-
-                .results-header {
-                    padding: 20px 25px;
-                    background: #f8f9fa;
-                    border-bottom: 1px solid #dee2e6;
+                .stats-summary {
+                    padding: 15px 25px;
+                    background: #f0f6fc;
+                    border-bottom: 1px solid #e1e5e9;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    font-size: 13px;
+                    color: #646970;
                 }
 
-                .results-info {
-                    color: #495057;
-                    font-size: 14px;
-                    font-weight: 500;
+                .summary-left {
+                    display: flex;
+                    gap: 20px;
                 }
 
-                .btn-add {
-                    background: #28a745;
-                    color: white;
-                    border: 1px solid #28a745;
-                    padding: 10px 20px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: 500;
-                    text-decoration: none;
-                    display: inline-flex;
+                .summary-item {
+                    display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 5px;
                 }
 
-                .btn-add:hover {
-                    background: #218838;
-                    border-color: #218838;
-                    color: white;
-                    text-decoration: none;
+                .summary-item .count {
+                    font-weight: 600;
+                    color: #2271b1;
                 }
 
-                .data-table {
+                .statistics-table-container {
+                    overflow-x: auto;
+                }
+
+                .statistics-table {
                     width: 100%;
                     border-collapse: collapse;
-                    font-size: 14px;
+                    margin: 0;
+                    background: #fff;
                 }
 
-                .data-table th {
+                .statistics-table th {
                     background: #f6f7f7;
                     color: #32373c;
                     font-weight: 600;
@@ -5189,7 +5103,7 @@ class StatisticPlugin
                     white-space: nowrap;
                 }
 
-                .data-table td {
+                .statistics-table td {
                     padding: 12px 15px;
                     border-bottom: 1px solid #f0f0f1;
                     vertical-align: top;
@@ -5197,8 +5111,20 @@ class StatisticPlugin
                     line-height: 1.4;
                 }
 
-                .data-table tbody tr:hover {
+                .statistics-table tbody tr:hover {
                     background: #f6f7f7;
+                }
+
+                .year-badge {
+                    display: inline-block;
+                    background: #2271b1;
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    min-width: 45px;
+                    text-align: center;
                 }
 
                 .category-name {
@@ -5216,24 +5142,57 @@ class StatisticPlugin
                     border-radius: 3px;
                 }
 
-                .year-badge {
-                    display: inline-block;
-                    background: #2271b1;
-                    color: white;
-                    padding: 4px 8px;
-                    border-radius: 12px;
+                .data-preview {
+                    max-width: 300px;
+                }
+
+                .data-summary {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 4px;
+                    margin-bottom: 8px;
+                }
+
+                .data-item {
+                    background: #e7f3ff;
+                    color: #0073aa;
+                    padding: 2px 6px;
+                    border-radius: 10px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+
+                .data-toggle {
+                    color: #2271b1;
+                    text-decoration: none;
                     font-size: 11px;
                     font-weight: 600;
-                    min-width: 45px;
-                    text-align: center;
+                }
+
+                .data-toggle:hover {
+                    text-decoration: underline;
+                }
+
+                .data-details {
+                    display: none;
+                    margin-top: 8px;
+                    padding: 8px;
+                    background: #f6f7f7;
+                    border-radius: 4px;
+                    font-family: monospace;
+                    font-size: 11px;
+                    max-height: 150px;
+                    overflow-y: auto;
                 }
 
                 .status-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
                     padding: 4px 8px;
                     border-radius: 12px;
                     font-size: 11px;
                     font-weight: 600;
-                    text-transform: uppercase;
                 }
 
                 .status-published {
@@ -5246,429 +5205,607 @@ class StatisticPlugin
                     color: #58151c;
                 }
 
-                .data-preview {
-                    max-width: 200px;
-                    font-size: 12px;
-                    color: #6c757d;
-                    line-height: 1.4;
-                }
-
-                .source-info {
-                    font-size: 12px;
-                    color: #6c757d;
-                    font-style: italic;
-                    max-width: 150px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
+                .status-indicator {
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 50%;
+                    background: currentColor;
                 }
 
                 .actions-cell {
                     white-space: nowrap;
                 }
 
-                .btn-action {
-                    padding: 4px 8px;
-                    margin: 0 2px;
-                    border-radius: 3px;
-                    font-size: 11px;
-                    font-weight: 500;
-                    text-decoration: none;
+                .action-btn {
                     display: inline-flex;
                     align-items: center;
-                    gap: 3px;
-                    border: 1px solid;
-                    cursor: pointer;
+                    gap: 4px;
+                    padding: 6px 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    text-decoration: none;
+                    font-size: 11px;
+                    font-weight: 600;
+                    margin-right: 5px;
+                    margin-bottom: 3px;
+                    transition: all 0.2s ease;
+                }
+
+                .action-btn:hover {
+                    text-decoration: none;
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 }
 
                 .btn-edit {
                     background: #fff;
-                    color: #007bff;
-                    border-color: #007bff;
+                    color: #2271b1;
+                    border-color: #2271b1;
                 }
 
                 .btn-edit:hover {
-                    background: #007bff;
+                    background: #2271b1;
                     color: #fff;
-                    text-decoration: none;
+                }
+
+                .btn-shortcode {
+                    background: #fff;
+                    color: #00a32a;
+                    border-color: #00a32a;
+                }
+
+                .btn-shortcode:hover {
+                    background: #00a32a;
+                    color: #fff;
                 }
 
                 .btn-delete {
                     background: #fff;
-                    color: #dc3545;
-                    border-color: #dc3545;
+                    color: #d63638;
+                    border-color: #d63638;
                 }
 
                 .btn-delete:hover {
-                    background: #dc3545;
+                    background: #d63638;
                     color: #fff;
-                    text-decoration: none;
                 }
 
-                .pagination-wrapper {
-                    padding: 20px 25px;
-                    background: #f8f9fa;
-                    border-top: 1px solid #dee2e6;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-
-                .pagination-info {
-                    color: #6c757d;
-                    font-size: 14px;
-                }
-
-                .pagination-links {
-                    display: flex;
-                    gap: 5px;
-                }
-
-                .pagination-links a,
-                .pagination-links span {
-                    padding: 8px 12px;
-                    border: 1px solid #dee2e6;
-                    border-radius: 4px;
-                    text-decoration: none;
-                    color: #495057;
-                    font-size: 14px;
-                    font-weight: 500;
-                }
-
-                .pagination-links a:hover {
-                    background: #e9ecef;
-                    text-decoration: none;
-                }
-
-                .pagination-links .current {
-                    background: #007bff;
-                    color: white;
-                    border-color: #007bff;
-                }
-
-                .no-data {
+                .empty-state {
                     text-align: center;
                     padding: 60px 20px;
-                    color: #6c757d;
+                    color: #646970;
                 }
 
-                .no-data-icon {
+                .empty-state-icon {
                     font-size: 48px;
                     margin-bottom: 15px;
                     opacity: 0.5;
                 }
 
-                .no-data h3 {
+                .empty-state h3 {
                     margin: 0 0 10px 0;
-                    color: #495057;
+                    color: #32373c;
                 }
 
-                .no-data p {
+                .empty-state p {
                     margin: 0 0 20px 0;
                     font-size: 14px;
                 }
 
-                /* Responsive */
+                /* Responsive Design */
                 @media (max-width: 1200px) {
-                    .filters-grid {
-                        grid-template-columns: 1fr 1fr 1fr;
-                        gap: 10px;
-                    }
-
-                    .filter-group:last-child {
-                        grid-column: 1 / -1;
-                        display: flex;
-                        flex-direction: row;
-                        gap: 10px;
-                        align-items: center;
-                        justify-content: flex-start;
+                    .data-preview {
+                        max-width: 200px;
                     }
                 }
 
                 @media (max-width: 768px) {
-                    .filters-grid {
-                        grid-template-columns: 1fr;
-                    }
-
-                    .filter-group:last-child {
-                        grid-column: 1;
+                    .statistics-filters {
                         flex-direction: column;
                         align-items: stretch;
                     }
 
-                    .data-table {
+                    .filter-actions {
+                        margin-left: 0;
+                        justify-content: center;
+                    }
+
+                    .stats-summary {
+                        flex-direction: column;
+                        gap: 10px;
+                        align-items: flex-start;
+                    }
+
+                    .summary-left {
+                        flex-direction: column;
+                        gap: 5px;
+                    }
+
+                    .statistics-table th,
+                    .statistics-table td {
+                        padding: 8px 10px;
                         font-size: 12px;
                     }
 
-                    .data-table th,
-                    .data-table td {
-                        padding: 10px 15px;
-                    }
-
-                    .pagination-wrapper {
-                        flex-direction: column;
-                        gap: 15px;
-                        text-align: center;
+                    .action-btn {
+                        padding: 4px 6px;
+                        font-size: 10px;
                     }
                 }
             </style>
 
-            <div class="list-container">
-                <div class="list-header">
-                    <h1>📋 Daftar Data Statistik</h1>
-                    <p class="description">Kelola semua data statistik desa/kelurahan yang telah diinput</p>
+            <div class="statistics-admin-container">
+                <!-- Header -->
+                <div class="statistics-header">
+                    <h1>📊 Daftar Statistik Desa/Kelurahan</h1>
+                    <p class="description">Kelola dan pantau semua data statistik yang telah diinput. Gunakan filter untuk
+                        mencari data spesifik.</p>
                 </div>
 
-                <div class="filters-section">
-                    <form method="get" action="">
+                <!-- Filters -->
+                <div class="statistics-filters">
+                    <form method="get" style="display: contents;">
                         <input type="hidden" name="page" value="statistic-list">
-                        <div class="filters-grid">
-                            <div class="filter-group">
-                                <label class="filter-label">🔍 Pencarian</label>
-                                                                 <input type="text" name="s" value="<?php echo esc_attr($search); ?>"
-                                     placeholder="Cari kategori atau sumber..." class="filter-input">
-                            </div>
-                            <div class="filter-group">
-                                <label class="filter-label">📅 Tahun</label>
-                                                                 <select name="filter_year" class="filter-select">
-                                    <option value="">Semua Tahun</option>
-                                    <?php foreach ($available_years as $year): ?>
-                                        <option value="<?php echo esc_attr($year); ?>" <?php selected($year_filter, $year); ?>>
-                                            <?php echo esc_html($year); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label class="filter-label">🏷️ Kategori</label>
-                                                                 <select name="filter_category" class="filter-select">
-                                    <option value="">Semua Kategori</option>
-                                    <?php foreach ($available_categories as $cat): ?>
-                                        <option value="<?php echo esc_attr($cat); ?>" <?php selected($category_filter, $cat); ?>>
-                                            <?php echo esc_html($categories[$cat] ?? $cat); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label class="filter-label">📊 Status</label>
-                                                                 <select name="filter_status" class="filter-select">
-                                    <option value="">Semua Status</option>
-                                    <option value="published" <?php selected($status_filter, 'published'); ?>>Dipublikasi</option>
-                                    <option value="draft" <?php selected($status_filter, 'draft'); ?>>Draft</option>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <button type="submit" class="btn-filter">
-                                    🔍 Filter
-                                </button>
-                                <a href="<?php echo admin_url('admin.php?page=statistic-list'); ?>" class="btn-clear">
-                                    🗑️ Reset
-                                </a>
-                            </div>
+
+                        <div class="filter-group">
+                            <label>Pencarian</label>
+                            <input type="text" name="s" value="<?php echo esc_attr($search); ?>"
+                                placeholder="Cari kategori atau sumber...">
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Tahun</label>
+                            <select name="filter_year">
+                                <option value="">Semua Tahun</option>
+                                <?php foreach ($years as $year): ?>
+                                    <option value="<?php echo esc_attr($year); ?>" <?php selected($filter_year, $year); ?>>
+                                        <?php echo esc_html($year); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Kategori</label>
+                            <select name="filter_category">
+                                <option value="">Semua Kategori</option>
+                                <?php foreach ($categories as $key => $name): ?>
+                                    <option value="<?php echo esc_attr($key); ?>" <?php selected($filter_category, $key); ?>
+                                        >
+                                        <?php echo esc_html($name); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Status</label>
+                            <select name="filter_status">
+                                <option value="">Semua Status</option>
+                                <option value="1" <?php selected($filter_status, '1'); ?>>Dipublikasi</option>
+                                <option value="0" <?php selected($filter_status, '0'); ?>>Draft</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button type="submit" class="button">🔍 Filter</button>
+                            <a href="<?php echo admin_url('admin.php?page=statistic-list'); ?>" class="button">↻ Reset</a>
                         </div>
                     </form>
                 </div>
 
-                <div class="results-section">
-                    <div class="results-header">
-                        <div class="results-info">
-                            📊 Menampilkan <?php echo number_format(count($results)); ?> dari
-                            <?php echo number_format($total_items); ?> data
-                            <?php if ($current_page > 1): ?>
-                                (Halaman <?php echo $current_page; ?> dari <?php echo $total_pages; ?>)
-                            <?php endif; ?>
-                        </div>
-                        <a href="<?php echo admin_url('admin.php?page=statistic-create'); ?>" class="btn-add">
-                            ➕ Tambah Data Baru
-                        </a>
-                    </div>
-
-                    <?php if (!empty($results)): ?>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Kategori</th>
-                                    <th>Tahun</th>
-                                    <th>Status</th>
-                                    <th>Data Preview</th>
-                                    <th>Sumber</th>
-                                    <th>Terakhir Update</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($results as $row): ?>
-                                    <tr>
-                                        <td>
-                                            <div class="category-name">
-                                                <?php echo esc_html($categories[$row->category] ?? $row->category); ?>
-                                            </div>
-                                            <div class="category-code"><?php echo esc_html($row->category); ?></div>
-                                        </td>
-                                        <td>
-                                            <span class="year-badge"><?php echo esc_html($row->year); ?></span>
-                                        </td>
-                                        <td>
-                                            <span
-                                                class="status-badge <?php echo $row->is_published ? 'status-published' : 'status-draft'; ?>">
-                                                <?php echo $row->is_published ? 'Published' : 'Draft'; ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                                                                         <div class="data-preview">
-                                                 <?php
-                                                 $data = json_decode($row->data, true) ?: array();
-                                                 $is_dynamic_rw = $this->is_dynamic_rw_category($row->category);
-                                                 if (!empty($data)) {
-                                                     $count = 0;
-                                                     $max_display = 4;
-                                                     echo '<div class="data-summary">';
-                                                     foreach ($data as $key => $value) {
-                                                         if ($count >= $max_display) break;
-                                                         $display_key = $key;
-                                                         if ($is_dynamic_rw && strpos($key, 'rw_') === 0) {
-                                                             $display_key = 'RW ' . str_replace('rw_', '', $key);
-                                                         } else {
-                                                             $category_fields = $this->get_category_fields();
-                                                             if (isset($category_fields[$row->category][$key])) {
-                                                                 $display_key = $category_fields[$row->category][$key];
-                                                             }
-                                                         }
-                                                         echo '<span class="data-item ' . ($is_dynamic_rw ? 'rw' : '') . '">'
-                                                              . esc_html(wp_trim_words($display_key, 2, '')) . ': '
-                                                              . esc_html($value) . '</span>';
-                                                         $count++;
-                                                     }
-                                                     echo '</div>';
-                                                     if (count($data) > $max_display) {
-                                                         echo '<div class="data-more">+' . (count($data) - $max_display) . ' data lainnya</div>';
-                                                     }
-                                                 } else {
-                                                     echo '<span style="color: #d63638; font-style: italic;">Data kosong</span>';
-                                                 }
-                                                 ?>
-                                             </div>
-                                        </td>
-                                        <td>
-                                                                                         <div class="source-text">
-                                                 <?php echo !empty($row->sumber) ? esc_html($row->sumber) : '<em style="color: #646970;">Tidak ada sumber</em>'; ?>
-                                             </div>
-                                        </td>
-                                        <td>
-                                            <?php echo esc_html(date('d M Y H:i', strtotime($row->updated_at))); ?>
-                                        </td>
-                                        <td class="actions-cell">
-                                            <a href="<?php echo admin_url('admin.php?page=statistic-edit&year=' . $row->year . '&category=' . $row->category); ?>"
-                                                class="btn-action btn-edit" title="Edit">
-                                                ✏️ Edit
-                                            </a>
-                                            <button type="button" class="btn-action btn-delete"
-                                                onclick="deleteStatistic(<?php echo $row->year; ?>, '<?php echo esc_js($row->category); ?>', '<?php echo esc_js($categories[$row->category] ?? $row->category); ?>')"
-                                                title="Hapus">
-                                                🗑️ Hapus
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-
-                        <?php if ($total_pages > 1): ?>
-                            <div class="pagination-wrapper">
-                                <div class="pagination-info">
-                                    Halaman <?php echo $current_page; ?> dari <?php echo $total_pages; ?>
-                                </div>
-                                <div class="pagination-links">
-                                    <?php
-                                    $base_url = admin_url('admin.php?page=statistic-list');
-                                    $query_params = array();
-                                    if ($search) $query_params['search'] = $search;
-                                    if ($year_filter) $query_params['year_filter'] = $year_filter;
-                                    if ($category_filter) $query_params['category_filter'] = $category_filter;
-                                    if ($status_filter) $query_params['status_filter'] = $status_filter;
-
-                                    // Previous page
-                                    if ($current_page > 1):
-                                        $prev_params = array_merge($query_params, array('paged' => $current_page - 1));
-                                        ?>
-                                        <a href="<?php echo add_query_arg($prev_params, $base_url); ?>">‹ Sebelumnya</a>
-                                    <?php endif; ?>
-
-                                    <?php
-                                    // Page numbers
-                                    $start_page = max(1, $current_page - 2);
-                                    $end_page = min($total_pages, $current_page + 2);
-
-                                    for ($i = $start_page; $i <= $end_page; $i++):
-                                        if ($i == $current_page): ?>
-                                            <span class="current"><?php echo $i; ?></span>
-                                        <?php else:
-                                            $page_params = array_merge($query_params, array('paged' => $i));
-                                            ?>
-                                            <a href="<?php echo add_query_arg($page_params, $base_url); ?>"><?php echo $i; ?></a>
-                                        <?php endif;
-                                    endfor;
-
-                                    // Next page
-                                    if ($current_page < $total_pages):
-                                        $next_params = array_merge($query_params, array('paged' => $current_page + 1));
-                                        ?>
-                                        <a href="<?php echo add_query_arg($next_params, $base_url); ?>">Selanjutnya ›</a>
-                                    <?php endif; ?>
-                                </div>
+                <!-- Summary Stats -->
+                <?php if ($results): ?>
+                    <div class="stats-summary">
+                        <div class="summary-left">
+                            <div class="summary-item">
+                                <span>📊 Total Data:</span>
+                                <span class="count"><?php echo count($results); ?></span>
                             </div>
-                        <?php endif; ?>
+                            <div class="summary-item">
+                                <span>✅ Dipublikasi:</span>
+                                <span class="count"><?php echo count(array_filter($results, function ($r) {
+                                    return $r->is_published;
+                                })); ?></span>
+                            </div>
+                            <div class="summary-item">
+                                <span>📝 Draft:</span>
+                                <span class="count"><?php echo count(array_filter($results, function ($r) {
+                                    return !$r->is_published;
+                                })); ?></span>
+                            </div>
+                        </div>
+                        <div class="summary-right">
+                            <a href="<?php echo admin_url('admin.php?page=statistic-create'); ?>" class="button button-primary">
+                                ➕ Tambah Data Baru
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
+                <!-- Table Content -->
+                <div class="statistics-content">
+                    <?php if ($results): ?>
+                        <div class="statistics-table-container">
+                            <table class="statistics-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 80px;">Tahun</th>
+                                        <th style="width: 200px;">Kategori</th>
+                                        <th style="width: 150px;">Sumber Data</th>
+                                        <th style="width: 300px;">Data Preview</th>
+                                        <th style="width: 100px;">Status</th>
+                                        <th style="width: 120px;">Terakhir Update</th>
+                                        <th style="width: 180px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($results as $row): ?>
+                                        <?php
+                                        $category_name = isset($categories[$row->category]) ? $categories[$row->category] : $row->category;
+                                        $data = json_decode($row->data, true) ?: array();
+                                        $data_count = count($data);
+                                        ?>
+                                        <tr>
+                                            <!-- Year -->
+                                            <td>
+                                                <span class="year-badge"><?php echo esc_html($row->year); ?></span>
+                                            </td>
+
+                                            <!-- Category -->
+                                            <td>
+                                                <div class="category-name"><?php echo esc_html($category_name); ?></div>
+                                                <div class="category-code"><?php echo esc_html($row->category); ?></div>
+                                            </td>
+
+                                            <!-- Source -->
+                                            <td>
+                                                <?php if (!empty($row->sumber)): ?>
+                                                    <span title="<?php echo esc_attr($row->sumber); ?>">
+                                                        <?php echo esc_html(wp_trim_words($row->sumber, 3, '...')); ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span style="color: #646970; font-style: italic;">Tidak ada sumber</span>
+                                                <?php endif; ?>
+                                            </td>
+
+                                            <!-- Data Preview -->
+                                            <td class="data-preview">
+                                                <?php if (!empty($data)): ?>
+                                                    <div class="data-summary">
+                                                        <?php
+                                                        $shown = 0;
+                                                        foreach ($data as $key => $value):
+                                                            if ($shown >= 3)
+                                                                break;
+                                                            $label = $key;
+                                                            if ($this->is_dynamic_rw_category($row->category) && strpos($key, 'rw_') === 0) {
+                                                                $label = 'RW ' . str_replace('rw_', '', $key);
+                                                            } elseif (isset($this->get_category_fields()[$row->category][$key])) {
+                                                                $label = $this->get_category_fields()[$row->category][$key];
+                                                            }
+                                                            ?>
+                                                            <span class="data-item" title="<?php echo esc_attr($label . ': ' . $value); ?>">
+                                                                <?php echo esc_html(wp_trim_words($label, 2, '') . ': ' . $value); ?>
+                                                            </span>
+                                                            <?php
+                                                            $shown++;
+                                                        endforeach;
+                                                        ?>
+                                                        <?php if ($data_count > 3): ?>
+                                                            <span class="data-item" style="background: #f0f0f1; color: #646970;">
+                                                                +<?php echo ($data_count - 3); ?> lainnya
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <a href="#" class="data-toggle" onclick="toggleDataDetails(this); return false;">
+                                                        👁️ Lihat Detail
+                                                    </a>
+                                                    <div class="data-details">
+                                                        <pre><?php echo esc_html(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)); ?></pre>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <span style="color: #d63638; font-style: italic;">Data kosong</span>
+                                                <?php endif; ?>
+                                            </td>
+
+                                            <!-- Status -->
+                                            <td>
+                                                <?php if ($row->is_published): ?>
+                                                    <span class="status-badge status-published">
+                                                        <span class="status-indicator"></span>
+                                                        Aktif
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="status-badge status-draft">
+                                                        <span class="status-indicator"></span>
+                                                        Draft
+                                                    </span>
+                                                <?php endif; ?>
+                                            </td>
+
+                                            <!-- Last Updated -->
+                                            <td>
+                                                <div style="font-size: 11px; color: #646970;">
+                                                    <?php echo esc_html(date('d/m/Y', strtotime($row->updated_at))); ?>
+                                                    <br>
+                                                    <?php echo esc_html(date('H:i', strtotime($row->updated_at))); ?>
+                                                </div>
+                                            </td>
+
+                                            <!-- Actions -->
+                                            <td class="actions-cell">
+                                                <a href="<?php echo admin_url('admin.php?page=statistic-edit&year=' . $row->year . '&category=' . $row->category); ?>"
+                                                    class="action-btn btn-edit" title="Edit Data">
+                                                    ✏️ Edit
+                                                </a>
+                                                <button class="action-btn btn-shortcode show-shortcode-btn"
+                                                    data-year="<?php echo esc_attr($row->year); ?>"
+                                                    data-category="<?php echo esc_attr($row->category); ?>"
+                                                    data-category-name="<?php echo esc_attr($category_name); ?>"
+                                                    title="Lihat Shortcode & API">
+                                                    🔗 Kode
+                                                </button>
+                                                <button class="action-btn btn-delete delete-statistic"
+                                                    data-year="<?php echo esc_attr($row->year); ?>"
+                                                    data-category="<?php echo esc_attr($row->category); ?>" title="Hapus Data">
+                                                    🗑️ Hapus
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     <?php else: ?>
-                        <div class="no-data">
-                            <div class="no-data-icon">📊</div>
-                            <h3>Tidak Ada Data</h3>
+                        <!-- Empty State -->
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <h3>Belum Ada Data Statistik</h3>
                             <p>
-                                <?php if (!empty($search) || !empty($year_filter) || !empty($category_filter) || !empty($status_filter)): ?>
+                                <?php if (!empty($search) || !empty($filter_year) || !empty($filter_category) || $filter_status !== ''): ?>
                                     Tidak ada data yang sesuai dengan filter yang dipilih.
+                                    <br><a href="<?php echo admin_url('admin.php?page=statistic-list'); ?>">Reset filter</a> untuk
+                                    melihat semua data.
                                 <?php else: ?>
-                                    Belum ada data statistik yang diinput.
+                                    Mulai dengan menambahkan data statistik pertama Anda.
                                 <?php endif; ?>
                             </p>
-                            <a href="<?php echo admin_url('admin.php?page=statistic-create'); ?>" class="btn-add">
-                                ➕ Tambah Data Pertama
+                            <a href="<?php echo admin_url('admin.php?page=statistic-create'); ?>"
+                                class="button button-primary button-large">
+                                ➕ Tambah Data Statistik
                             </a>
                         </div>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <script>
-                function deleteStatistic(year, category, categoryName) {
-                    if (!confirm(`⚠️ Apakah Anda yakin ingin menghapus data statistik?\n\nKategori: ${categoryName}\nTahun: ${year}\n\nTindakan ini tidak dapat dibatalkan.`)) {
+            <!-- Modal untuk Shortcode & API - UPDATED WITH ALL CHART TYPES -->
+            <div id="shortcode-modal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;">
+                <div
+                    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; max-width: 900px; width: 90%; max-height: 80%; overflow-y: auto;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px;">
+                        <h2 id="modal-title" style="margin: 0; color: #333;">Shortcode & API untuk Data</h2>
+                        <button onclick="closeModal()"
+                            style="background: #666; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">✕
+                            Tutup</button>
+                    </div>
+                    <div id="modal-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Toggle data details
+            function toggleDataDetails(element) {
+                const details = element.nextElementSibling;
+                if (details.style.display === 'none' || details.style.display === '') {
+                    details.style.display = 'block';
+                    element.textContent = '👁️ Sembunyikan Detail';
+                } else {
+                    details.style.display = 'none';
+                    element.textContent = '👁️ Lihat Detail';
+                }
+            }
+
+            jQuery(document).ready(function ($) {
+                // Delete functionality
+                $('.delete-statistic').click(function (e) {
+                    e.preventDefault();
+                    if (!confirm('⚠️ Apakah Anda yakin ingin menghapus data ini?\n\nData yang dihapus tidak dapat dikembalikan.')) {
                         return;
                     }
 
-                    const formData = new FormData();
-                    formData.append('action', 'statistic_delete');
-                    formData.append('year', year);
-                    formData.append('category', category);
-                    formData.append('nonce', '<?php echo wp_create_nonce('statistic_delete_nonce'); ?>');
+                    var year = $(this).data('year');
+                    var category = $(this).data('category');
+                    var row = $(this).closest('tr');
+                    var button = $(this);
 
-                    fetch(ajaxurl, {
+                    // Disable button and show loading
+                    button.prop('disabled', true).html('⏳ Menghapus...');
+
+                    $.ajax({
+                        url: ajaxurl,
                         method: 'POST',
-                        body: formData
-                    })
-                        .then(response => response.text())
-                        .then(data => {
-                            alert(data);
-                            if (data.includes('berhasil')) {
-                                location.reload();
+                        data: {
+                            action: 'statistic_delete',
+                            year: year,
+                            category: category,
+                            nonce: '<?php echo wp_create_nonce('statistic_delete_nonce'); ?>'
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                row.fadeOut(400, function () {
+                                    row.remove();
+                                    // Update summary if needed
+                                    location.reload();
+                                });
+                            } else {
+                                alert('❌ Gagal menghapus data: ' + response.data);
+                                button.prop('disabled', false).html('🗑️ Hapus');
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
+                        },
+                        error: function () {
                             alert('❌ Terjadi kesalahan saat menghapus data');
-                        });
+                            button.prop('disabled', false).html('🗑️ Hapus');
+                        }
+                    });
+                });
+
+                // Shortcode button functionality
+                $('.show-shortcode-btn').click(function () {
+                    var year = $(this).data('year');
+                    var category = $(this).data('category');
+                    var categoryName = $(this).data('category-name');
+                    showShortcodeModal(year, category, categoryName);
+                });
+            });
+
+            // UPDATED Function untuk menampilkan modal dengan SEMUA JENIS CHART
+            function showShortcodeModal(year, category, categoryName) {
+                var baseUrl = '<?php echo home_url(); ?>';
+                var apiBase = baseUrl + '/wp-json/statistic/v1/data';
+                var modalTitle = 'Shortcode & API untuk ' + categoryName + ' (' + year + ')';
+
+                document.getElementById('modal-title').textContent = modalTitle;
+
+                var content = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0; color: #495057;">📊 Shortcodes</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #666; margin-bottom: 8px;">1. Tampilan Card:</h4>
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #007cba;">
+                            <code style="color: #d63384; font-weight: 500;">[statistic_display year="${year}" category="${category}"]</code>
+                            <button onclick="copyToClipboard('[statistic_display year=&quot;${year}&quot; category=&quot;${category}&quot;]')" style="margin-left: 10px; padding: 4px 8px; background: #007cba; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #666; margin-bottom: 8px;">2. Tampilan Tabel:</h4>
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #28a745;">
+                            <code style="color: #d63384; font-weight: 500;">[statistic_table year="${year}" category="${category}" limit="10"]</code>
+                            <button onclick="copyToClipboard('[statistic_table year=&quot;${year}&quot; category=&quot;${category}&quot; limit=&quot;10&quot;]')" style="margin-left: 10px; padding: 4px 8px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #666; margin-bottom: 8px;">3. Grafik - Semua Jenis Chart:</h4>
+                        
+                        <!-- Bar Chart (Vertikal) -->
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 8px;">
+                            <strong style="color: #856404;">📊 Bar Chart (Vertikal):</strong><br>
+                            <code style="color: #d63384; font-weight: 500;">[statistic_chart year="${year}" category="${category}" type="bar" height="400"]</code>
+                            <button onclick="copyToClipboard('[statistic_chart year=&quot;${year}&quot; category=&quot;${category}&quot; type=&quot;bar&quot; height=&quot;400&quot;]')" style="margin-left: 10px; padding: 4px 8px; background: #ffc107; color: #212529; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                        
+                        <!-- Bar Chart (Horizontal) -->
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #17a2b8; margin-bottom: 8px;">
+                            <strong style="color: #0c5460;">📈 Bar Chart (Horizontal):</strong><br>
+                            <code style="color: #d63384; font-weight: 500;">[statistic_chart year="${year}" category="${category}" type="horizontalBar" height="400"]</code>
+                            <button onclick="copyToClipboard('[statistic_chart year=&quot;${year}&quot; category=&quot;${category}&quot; type=&quot;horizontalBar&quot; height=&quot;400&quot;]')" style="margin-left: 10px; padding: 4px 8px; background: #17a2b8; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                        
+                        <!-- Pie Chart -->
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #dc3545; margin-bottom: 8px;">
+                            <strong style="color: #721c24;">🥧 Pie Chart:</strong><br>
+                            <code style="color: #d63384; font-weight: 500;">[statistic_chart year="${year}" category="${category}" type="pie" height="400"]</code>
+                            <button onclick="copyToClipboard('[statistic_chart year=&quot;${year}&quot; category=&quot;${category}&quot; type=&quot;pie&quot; height=&quot;400&quot;]')" style="margin-left: 10px; padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                        
+                        <!-- Line Chart -->
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #6f42c1; margin-bottom: 8px;">
+                            <strong style="color: #432874;">📉 Line Chart:</strong><br>
+                            <code style="color: #d63384; font-weight: 500;">[statistic_chart year="${year}" category="${category}" type="line" height="400"]</code>
+                            <button onclick="copyToClipboard('[statistic_chart year=&quot;${year}&quot; category=&quot;${category}&quot; type=&quot;line&quot; height=&quot;400&quot;]')" style="margin-left: 10px; padding: 4px 8px; background: #6f42c1; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                        
+                        <!-- Doughnut Chart -->
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #fd7e14; margin-bottom: 8px;">
+                            <strong style="color: #8a4a00;">🍩 Doughnut Chart:</strong><br>
+                            <code style="color: #d63384; font-weight: 500;">[statistic_chart year="${year}" category="${category}" type="doughnut" height="400"]</code>
+                            <button onclick="copyToClipboard('[statistic_chart year=&quot;${year}&quot; category=&quot;${category}&quot; type=&quot;doughnut&quot; height=&quot;400&quot;]')" style="margin-left: 10px; padding: 4px 8px; background: #fd7e14; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                        
+                        <!-- Radar Chart -->
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #20c997;">
+                            <strong style="color: #0a6c47;">🎯 Radar Chart:</strong><br>
+                            <code style="color: #d63384; font-weight: 500;">[statistic_chart year="${year}" category="${category}" type="radar" height="400"]</code>
+                            <button onclick="copyToClipboard('[statistic_chart year=&quot;${year}&quot; category=&quot;${category}&quot; type=&quot;radar&quot; height=&quot;400&quot;]')" style="margin-left: 10px; padding: 4px 8px; background: #20c997; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                        
+                        <div style="background: #e9ecef; padding: 10px; border-radius: 4px; margin-top: 10px;">
+                            <small style="color: #6c757d;">
+                                <strong>💡 Tips:</strong> Anda dapat mengubah parameter <code>height</code> untuk menyesuaikan tinggi grafik (contoh: height="300", height="500", dll.)
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: #e9ecef; padding: 20px; border-radius: 6px;">
+                    <h3 style="margin-top: 0; color: #495057;">🔌 REST API Endpoints</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #666; margin-bottom: 8px;">1. Data Spesifik:</h4>
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #6f42c1;">
+                            <code style="color: #d63384; font-weight: 500;">${apiBase}/${year}/${category}</code>
+                            <button onclick="copyToClipboard('${apiBase}/${year}/${category}')" style="margin-left: 10px; padding: 4px 8px; background: #6f42c1; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #666; margin-bottom: 8px;">2. Semua Data Tahun ${year}:</h4>
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #20c997;">
+                            <code style="color: #d63384; font-weight: 500;">${apiBase}/${year}</code>
+                            <button onclick="copyToClipboard('${apiBase}/${year}')" style="margin-left: 10px; padding: 4px 8px; background: #20c997; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #666; margin-bottom: 8px;">3. Semua Data (Semua Tahun):</h4>
+                        <div style="background: white; padding: 12px; border-radius: 4px; border-left: 4px solid #007bff;">
+                            <code style="color: #d63384; font-weight: 500;">${apiBase}</code>
+                            <button onclick="copyToClipboard('${apiBase}')" style="margin-left: 10px; padding: 4px 8px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">📋 Copy</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                document.getElementById('modal-content').innerHTML = content;
+                document.getElementById('shortcode-modal').style.display = 'block';
+            }
+
+            // Function untuk menutup modal
+            function closeModal() {
+                document.getElementById('shortcode-modal').style.display = 'none';
+            }
+
+            // Function untuk copy ke clipboard
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(function () {
+                    var button = event.target;
+                    var originalText = button.textContent;
+                    button.textContent = '✅ Copied!';
+                    button.style.opacity = '0.8';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.style.opacity = '1';
+                    }, 1500);
+                }).catch(function (err) {
+                    console.error('Could not copy text: ', err);
+                    alert('Berhasil menyalin ke clipboard');
+                });
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('shortcode-modal').addEventListener('click', function (e) {
+                if (e.target === this) {
+                    closeModal();
                 }
-            </script>
-        </div>
+            });
+        </script>
         <?php
     }
 
@@ -5760,24 +5897,11 @@ class StatisticPlugin
                             <div class="step-card step-purple">
                                 <div class="step-number">4</div>
                                 <div class="step-content">
-                                    <h3>Tambah Kategori Baru (Opsional)</h3>
+                                    <h3>Isi Sumber Data (Opsional)</h3>
                                     <ul>
-                                        <li>Buka menu <strong>"Statistik Desa" → "Kelola Kategori & Field"</strong>.</li>
-                                        <li>Klik <strong>"Tambah Kategori"</strong>, lalu isi:
-                                            <ul>
-                                                <li><strong>Kode Kategori</strong>: huruf kecil/angka/underscore (contoh: <code>pendidikan_warga</code>)</li>
-                                                <li><strong>Nama Kategori</strong>: nama yang tampil ke pengguna</li>
-                                                <li><strong>Tipe Kategori</strong>:
-                                                    <ul>
-                                                        <li><strong>Regular</strong>: field statis per kategori</li>
-                                                        <li><strong>RW Dinamis</strong>: field RW dibuat dinamis saat input</li>
-                                                        <li><strong>Nested Gender</strong>: struktur data Laki-laki/Perempuan per field</li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        <li>Klik <strong>Simpan</strong>. Kategori baru akan muncul di dropdown kategori pada form input.</li>
-                                        <li>(Opsional) Kelola field: pilih kategori → <strong>Kelola Field</strong> → isi Kode Field dan Nama Field → <strong>Tambah</strong> → <strong>Simpan</strong>.</li>
+                                        <li>Masukkan sumber data statistik</li>
+                                        <li>Contoh: "BPS Kabupaten", "Survei Desa 2024", "Data RT/RW"</li>
+                                        <li>Field ini opsional tapi disarankan untuk transparansi</li>
                                     </ul>
                                 </div>
                             </div>
