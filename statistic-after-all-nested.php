@@ -357,6 +357,7 @@ class StatisticPlugin
         add_action('wp_ajax_save_field', array($this, 'handle_save_field'));
         add_action('wp_ajax_delete_field', array($this, 'handle_delete_field'));
         add_action('wp_ajax_get_category_fields', array($this, 'handle_get_category_fields'));
+        add_action('wp_ajax_drop_categories_table', array($this, 'handle_drop_categories_table'));
 
         // REST API endpoints
         add_action('rest_api_init', array($this, 'register_rest_routes'));
@@ -1355,7 +1356,6 @@ class StatisticPlugin
 
         return $html;
     }
-
     /**
      * Get year options
      * Mendapatkan opsi tahun untuk dropdown (3 tahun ke belakang dan ke depan)
@@ -2151,7 +2151,6 @@ class StatisticPlugin
                     color: #fff;
                     text-decoration: none;
                 }
-
                 .no-fields {
                     padding: 20px;
                     text-align: center;
@@ -2183,7 +2182,6 @@ class StatisticPlugin
                     }
                 }
             </style>
-
             <div class="category-management-container">
                 <div class="category-header">
                     <h1>🏷️ Kelola Kategori & Field</h1>
@@ -2202,6 +2200,9 @@ class StatisticPlugin
                     </div>
                     <button class="btn-add-category" onclick="openCategoryModal()">
                         ➕ Tambah Kategori Baru
+                    </button>
+                    <button class="btn-delete" onclick="dropCategoriesTable()" title="Hapus tabel kategori (statistic_categories)">
+                        🗑️ Hapus Tabel Kategori
                     </button>
                 </div>
 
@@ -2719,6 +2720,40 @@ class StatisticPlugin
                     });
             }
 
+            // Hapus tabel kategori (hanya table wp_statistic_categories)
+            function dropCategoriesTable() {
+                if (!confirm('Apakah Anda yakin ingin menghapus tabel kategori (wp_statistic_categories)?\n\nSemua kategori dan field terkait mungkin menjadi tidak sinkron. Tindakan ini tidak dapat dibatalkan.')) {
+                    return;
+                }
+                const btns = document.querySelectorAll('.btn-delete');
+                btns.forEach(b => b.disabled = true);
+
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'drop_categories_table',
+                        nonce: '<?php echo wp_create_nonce('drop_categories_table_nonce'); ?>'
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('✅ ' + data.data);
+                            location.reload();
+                        } else {
+                            alert('❌ ' + data.data);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('❌ Terjadi kesalahan saat menghapus tabel kategori.');
+                    })
+                    .finally(() => {
+                        btns.forEach(b => b.disabled = false);
+                    });
+            }
+
             // Close modals when clicking outside
             document.addEventListener('click', function (e) {
                 if (e.target.classList.contains('modal-overlay')) {
@@ -2896,6 +2931,36 @@ class StatisticPlugin
             wp_send_json_success('Kategori berhasil dihapus.');
         } else {
             wp_send_json_error('Gagal menghapus kategori: ' . $wpdb->last_error);
+        }
+    }
+
+    /**
+     * NEW: Handle drop categories table only
+     * Menghapus tabel kategori wp_statistic_categories saja
+     */
+    public function handle_drop_categories_table()
+    {
+        // Verify nonce
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'drop_categories_table_nonce')) {
+            wp_send_json_error('Nonce verification failed.');
+            return;
+        }
+
+        // Check permission
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized access.');
+            return;
+        }
+
+        global $wpdb;
+        $table = $this->categories_table; // e.g., wp_statistic_categories
+
+        $result = $wpdb->query("DROP TABLE IF EXISTS {$table}");
+
+        if ($result === false) {
+            wp_send_json_error('Gagal menghapus tabel kategori: ' . $wpdb->last_error);
+        } else {
+            wp_send_json_success('Tabel kategori berhasil dihapus.');
         }
     }
 
@@ -5526,7 +5591,6 @@ class StatisticPlugin
                 </div>
             </div>
         </div>
-
         <script>
             // Toggle data details
             function toggleDataDetails(element) {
@@ -6138,7 +6202,6 @@ class StatisticPlugin
                         </div>
                     </div>
                 </div>
-
                 <!-- API Tab -->
                 <div id="api-tab" class="tab-content">
                     <div class="doc-section">
@@ -6201,9 +6264,6 @@ class StatisticPlugin
                         </div>
                     </div>
                 </div>
-
-
-
                 <style>
                     /* Documentation Styling - White and Gray Theme */
                     .documentation-container {
@@ -6785,7 +6845,6 @@ class StatisticPlugin
                         font-size: 18px;
                         font-weight: 600;
                     }
-
                     .categories-table table {
                         width: 100%;
                         border-collapse: collapse;
