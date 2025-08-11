@@ -5044,6 +5044,12 @@ class StatisticPlugin
                     flex-direction: column;
                     gap: 5px;
                 }
+                .filters-grid .filter-group:last-child {
+                    flex-direction: row;
+                    align-items: center;
+                    gap: 10px;
+                    justify-content: flex-start;
+                }
 
                 .filter-label {
                     font-size: 13px;
@@ -5653,905 +5659,649 @@ class StatisticPlugin
     {
         ?>
         <div class="wrap">
-            <style>
-                /* Documentation Styling */
-                .docs-container {
-                    max-width: 1200px;
-                    margin: 20px 0;
-                }
-
-                .docs-header {
-                    background: #f8f9fa;
-                    color: #222;
-                    padding: 20px;
-                    border-radius: 8px;
-                    margin-bottom: 20px;
-                    border: 1px solid #e1e5e9;
-                    box-shadow: none;
-                }
-
-                .docs-header h1 {
-                    margin: 0 0 10px 0;
-                    font-size: 28px;
-                    font-weight: 700;
-                }
-
-                .docs-subtitle {
-                    font-size: 16px;
-                    opacity: 0.9;
-                    margin: 0;
-                }
-
-                .docs-nav {
-                    background: white;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                    margin-bottom: 30px;
-                    overflow: hidden;
-                }
-
-                .nav-tabs {
-                    display: flex;
-                    background: #f8f9fa;
-                    border-bottom: 1px solid #dee2e6;
-                    margin: 0;
-                    padding: 0;
-                    list-style: none;
-                }
-
-                .nav-tab {
-                    flex: 1;
-                    text-align: center;
-                }
-
-                .nav-tab a {
-                    display: block;
-                    padding: 15px 20px;
-                    color: #495057;
-                    text-decoration: none;
-                    font-weight: 500;
-                    border-bottom: 3px solid transparent;
-                    transition: all 0.3s ease;
-                }
-
-                .nav-tab a:hover,
-                .nav-tab a.active {
-                    color: #007bff;
-                    border-bottom-color: #007bff;
-                    background: white;
-                }
-
-                .tab-content {
-                    display: none;
-                    padding: 30px;
-                }
-
-                .tab-content.active {
-                    display: block;
-                }
-
-                .section {
-                    margin-bottom: 40px;
-                }
-
-                .section h2 {
-                    color: #2c3e50;
-                    font-size: 24px;
-                    font-weight: 600;
-                    margin: 0 0 20px 0;
-                    padding-bottom: 10px;
-                    border-bottom: 2px solid #e9ecef;
-                }
-
-                .section h3 {
-                    color: #495057;
-                    font-size: 18px;
-                    font-weight: 600;
-                    margin: 25px 0 15px 0;
-                }
-
-                .section h4 {
-                    color: #6c757d;
-                    font-size: 16px;
-                    font-weight: 600;
-                    margin: 20px 0 10px 0;
-                }
-
-                .section p {
-                    color: #495057;
-                    line-height: 1.6;
-                    margin-bottom: 15px;
-                }
-
-                .code-block {
-                    background: #f8f9fa;
-                    border: 1px solid #e9ecef;
-                    border-radius: 6px;
-                    padding: 20px;
-                    margin: 15px 0;
-                    font-family: 'Courier New', monospace;
-                    font-size: 14px;
-                    overflow-x: auto;
-                    position: relative;
-                }
-
-                .code-block pre {
-                    margin: 0;
-                    white-space: pre-wrap;
-                    word-wrap: break-word;
-                }
-
-                .code-block .copy-btn {
-                    position: absolute;
-                    top: 10px;
-                    right: 10px;
-                    background: #007bff;
-                    color: white;
-                    border: none;
-                    padding: 5px 10px;
-                    border-radius: 4px;
-                    font-size: 12px;
-                    cursor: pointer;
-                    opacity: 0.7;
-                    transition: opacity 0.3s ease;
-                }
-
-                .code-block .copy-btn:hover {
-                    opacity: 1;
-                }
-
-                .parameter-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin: 20px 0;
-                    background: white;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                }
-
-                .parameter-table th {
-                    background: #f8f9fa;
-                    padding: 15px;
-                    text-align: left;
-                    font-weight: 600;
-                    color: #495057;
-                    border-bottom: 2px solid #dee2e6;
-                }
-
-                .parameter-table td {
-                    padding: 12px 15px;
-                    border-bottom: 1px solid #f8f9fa;
-                    vertical-align: top;
-                }
-
-                .parameter-table tbody tr:hover {
-                    background: #f8f9fa;
-                }
-
-                .parameter-name {
-                    font-family: monospace;
-                    background: #e9ecef;
-                    padding: 2px 6px;
-                    border-radius: 3px;
-                    font-weight: 600;
-                }
-
-                .parameter-type {
-                    color: #6c757d;
-                    font-style: italic;
-                    font-size: 13px;
-                }
-
-                .example-box {
-                    background: #e7f3ff;
-                    border: 1px solid #b3d9ff;
-                    border-radius: 8px;
-                    padding: 20px;
-                    margin: 20px 0;
-                }
-
-                .example-box h4 {
-                    color: #0056b3;
-                    margin: 0 0 15px 0;
-                    font-size: 16px;
-                    font-weight: 600;
-                }
-
-                .example-box .description {
-                    color: #495057;
-                    margin-bottom: 15px;
-                    font-size: 14px;
-                }
-
-                .warning-box {
-                    background: #fff3cd;
-                    border: 1px solid #ffeaa7;
-                    border-radius: 8px;
-                    padding: 15px;
-                    margin: 20px 0;
-                    border-left: 4px solid #f39c12;
-                }
-
-                .warning-box h4 {
-                    color: #856404;
-                    margin: 0 0 10px 0;
-                    font-size: 14px;
-                    font-weight: 600;
-                }
-
-                .warning-box p {
-                    color: #856404;
-                    margin: 0;
-                    font-size: 14px;
-                }
-
-                .info-box {
-                    background: #d1ecf1;
-                    border: 1px solid #bee5eb;
-                    border-radius: 8px;
-                    padding: 15px;
-                    margin: 20px 0;
-                    border-left: 4px solid #17a2b8;
-                }
-
-                .info-box h4 {
-                    color: #0c5460;
-                    margin: 0 0 10px 0;
-                    font-size: 14px;
-                    font-weight: 600;
-                }
-
-                .info-box p {
-                    color: #0c5460;
-                    margin: 0;
-                    font-size: 14px;
-                }
-
-                .feature-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                    gap: 20px;
-                    margin: 30px 0;
-                }
-
-                .feature-card {
-                    background: white;
-                    border: 1px solid #e9ecef;
-                    border-radius: 8px;
-                    padding: 20px;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                }
-
-                .feature-card h4 {
-                    color: #2c3e50;
-                    margin: 0 0 10px 0;
-                    font-size: 16px;
-                    font-weight: 600;
-                }
-
-                .feature-card p {
-                    color: #6c757d;
-                    margin: 0;
-                    font-size: 14px;
-                    line-height: 1.5;
-                }
-
-                .feature-icon {
-                    font-size: 24px;
-                    margin-bottom: 10px;
-                    display: block;
-                }
-
-                /* Responsive */
-                @media (max-width: 768px) {
-                    .nav-tabs {
-                        flex-direction: column;
-                    }
-
-                    .tab-content {
-                        padding: 20px;
-                    }
-
-                    .docs-header {
-                        padding: 20px;
-                    }
-
-                    .docs-header h1 {
-                        font-size: 24px;
-                    }
-
-                    .parameter-table {
-                        font-size: 13px;
-                    }
-
-                    .parameter-table th,
-                    .parameter-table td {
-                        padding: 10px;
-                    }
-                }
-            </style>
-
-            <div class="docs-container">
-                <div class="docs-header">
-                    <h1>📖 Dokumentasi Plugin Statistik Desa/Kelurahan</h1>
-                    <p class="docs-subtitle">Panduan lengkap penggunaan shortcode, API, dan fitur-fitur plugin</p>
+            <div class="documentation-container">
+                <div class="doc-header">
+                    <h1>📚 Dokumentasi Plugin Statistik Desa/Kelurahan</h1>
+                    <p class="doc-subtitle">Panduan lengkap cara input data, penggunaan shortcode dan API untuk menampilkan statistik</p>
                 </div>
 
-                <div class="docs-nav">
-                    <ul class="nav-tabs">
-                        <li class="nav-tab">
-                            <a href="#shortcodes" class="nav-link active" onclick="showTab('shortcodes', this)">
-                                🔗 Shortcodes
-                            </a>
-                        </li>
-                        <li class="nav-tab">
-                            <a href="#api" class="nav-link" onclick="showTab('api', this)">
-                                🌐 REST API
-                            </a>
-                        </li>
-                        <li class="nav-tab">
-                            <a href="#features" class="nav-link" onclick="showTab('features', this)">
-                                ⚡ Fitur
-                            </a>
-                        </li>
-                        <li class="nav-tab">
-                            <a href="#examples" class="nav-link" onclick="showTab('examples', this)">
-                                💡 Contoh
-                            </a>
-                        </li>
-                    </ul>
+                <div class="doc-tabs">
+                    <button class="tab-button active" onclick="showTab('tutorial')">📝 Tutorial Input</button>
+                    <button class="tab-button" onclick="showTab('shortcodes')">📊 Shortcodes</button>
+                    <button class="tab-button" onclick="showTab('api')">🔌 REST API</button>
+                    <button class="tab-button" onclick="showTab('examples')">💡 Contoh Penggunaan</button>
+                </div>
 
-                     <!-- Shortcodes Tab -->
-                    <div id="shortcodes" class="tab-content active">
-                        <div class="section">
-                            <h2>🔗 Shortcodes</h2>
-                            <p>Plugin ini menyediakan 4 shortcode utama untuk menampilkan data statistik di frontend:</p>
+                <!-- Tutorial Tab -->
+                <div id="tutorial-tab" class="tab-content active">
+                    <div class="doc-section">
+                        <div class="section-header">
+                            <h2>🚀 Tutorial Menggunakan Form Input Statistik</h2>
+                            <span class="badge badge-primary">Panduan Lengkap</span>
+                        </div>
 
-                            <h3>1. [statistic_display] - Tampilan Card</h3>
-                            <p>Menampilkan data statistik dalam format card yang menarik dengan perbandingan gender untuk kategori nested.</p>
-
-                            <div class="code-block">
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre>[statistic_display]
-[statistic_display year="2024"]
-[statistic_display category="agama"]
-[statistic_display year="2024" category="agama" show_source="false"]</pre>
+                        <div class="tutorial-steps">
+                            <!-- Step 1 -->
+                            <div class="step-card step-blue">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h3>Akses Menu Input Statistik</h3>
+                                    <ul>
+                                        <li>Login ke WordPress Admin Dashboard</li>
+                                        <li>Buka menu <strong>"Statistik Desa"</strong> di sidebar</li>
+                                        <li>Klik <strong>"Input Statistik"</strong></li>
+                                    </ul>
+                                </div>
                             </div>
 
-                            <table class="parameter-table">
-                                <thead>
-                                    <tr>
-                                        <th>Parameter</th>
-                                        <th>Tipe</th>
-                                        <th>Default</th>
-                                        <th>Deskripsi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><span class="parameter-name">year</span></td>
-                                        <td><span class="parameter-type">string</span></td>
-                                        <td>-</td>
-                                        <td>Filter berdasarkan tahun tertentu</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">category</span></td>
-                                        <td><span class="parameter-type">string</span></td>
-                                        <td>-</td>
-                                        <td>Filter berdasarkan kategori tertentu</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">published_only</span></td>
-                                        <td><span class="parameter-type">boolean</span></td>
-                                        <td>true</td>
-                                        <td>Hanya tampilkan data yang dipublikasi</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">show_source</span></td>
-                                        <td><span class="parameter-type">boolean</span></td>
-                                        <td>true</td>
-                                        <td>Tampilkan sumber data</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">show_year</span></td>
-                                        <td><span class="parameter-type">boolean</span></td>
-                                        <td>true</td>
-                                        <td>Tampilkan tahun di judul</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <h3>2. [statistic_table] - Tampilan Tabel</h3>
-                            <p>Menampilkan data statistik dalam format tabel yang rapi dan mudah dibaca.</p>
-
-                            <div class="code-block">
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre>[statistic_table]
-[statistic_table year="2024" limit="5"]
-[statistic_table category="pendidikan_dalam_kk" show_source="false"]</pre>
+                            <!-- Step 2 -->
+                            <div class="step-card step-green">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h3>Pilih Tahun Data</h3>
+                                    <ul>
+                                        <li>Pilih tahun dari dropdown (tersedia 3 tahun ke belakang dan ke depan)</li>
+                                        <li>Contoh: 2024, 2023, 2025</li>
+                                        <li><strong>Catatan:</strong> Tahun tidak bisa diubah saat edit data</li>
+                                    </ul>
+                                </div>
                             </div>
 
-                            <table class="parameter-table">
-                                <thead>
-                                    <tr>
-                                        <th>Parameter</th>
-                                        <th>Tipe</th>
-                                        <th>Default</th>
-                                        <th>Deskripsi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><span class="parameter-name">year</span></td>
-                                        <td><span class="parameter-type">string</span></td>
-                                        <td>-</td>
-                                        <td>Filter berdasarkan tahun tertentu</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">category</span></td>
-                                        <td><span class="parameter-type">string</span></td>
-                                        <td>-</td>
-                                        <td>Filter berdasarkan kategori tertentu</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">published_only</span></td>
-                                        <td><span class="parameter-type">boolean</span></td>
-                                        <td>true</td>
-                                        <td>Hanya tampilkan data yang dipublikasi</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">show_source</span></td>
-                                        <td><span class="parameter-type">boolean</span></td>
-                                        <td>true</td>
-                                        <td>Tampilkan sumber data</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">limit</span></td>
-                                        <td><span class="parameter-type">integer</span></td>
-                                        <td>10</td>
-                                        <td>Batasi jumlah data yang ditampilkan</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <h3>3. [statistic_chart] - Tampilan Grafik</h3>
-                            <p>Menampilkan data statistik dalam format grafik interaktif menggunakan Chart.js.</p>
-
-                            <div class="code-block">
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre>[statistic_chart category="agama"]
-[statistic_chart year="2024" category="pekerjaan" type="pie"]
-[statistic_chart category="jenis_kelamin" type="horizontalBar" height="300"]</pre>
+                            <!-- Step 3 -->
+                            <div class="step-card step-yellow">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h3>Pilih Kategori Statistik</h3>
+                                    <p>Pilih kategori data yang akan diinput:</p>
+                                    <div class="category-grid">
+                                        <?php
+                                        $categories = $this->get_categories();
+                                        $count = 0;
+                                        foreach ($categories as $code => $name):
+                                            if ($count >= 9) break; // Limit to 9 for display
+                                        ?>
+                                            <div class="category-item">
+                                                <code><?php echo esc_html($code); ?></code>
+                                                <span><?php echo esc_html($name); ?></span>
+                                            </div>
+                                        <?php
+                                            $count++;
+                                        endforeach;
+                                        ?>
+                                        <div class="category-item more">
+                                            <span>+<?php echo (count($categories) - 9); ?> kategori lainnya</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <table class="parameter-table">
-                                <thead>
-                                    <tr>
-                                        <th>Parameter</th>
-                                        <th>Tipe</th>
-                                        <th>Default</th>
-                                        <th>Deskripsi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><span class="parameter-name">year</span></td>
-                                        <td><span class="parameter-type">string</span></td>
-                                        <td>Tahun saat ini</td>
-                                        <td>Tahun data yang akan ditampilkan</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">category</span></td>
-                                        <td><span class="parameter-type">string</span></td>
-                                        <td>-</td>
-                                        <td><strong>Wajib:</strong> Kategori yang akan ditampilkan</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">type</span></td>
-                                        <td><span class="parameter-type">string</span></td>
-                                        <td>bar</td>
-                                        <td>Jenis grafik: bar, pie, line, horizontalBar</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">height</span></td>
-                                        <td><span class="parameter-type">integer</span></td>
-                                        <td>400</td>
-                                        <td>Tinggi grafik dalam pixel</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <h3>4. [statistic_form] - Form Input</h3>
-                            <p>Menampilkan form input data statistik di frontend (hanya untuk admin).</p>
-
-                            <div class="code-block">
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre>[statistic_form]</pre>
+                            <!-- Step 4 -->
+                            <div class="step-card step-purple">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h3>Isi Sumber Data (Opsional)</h3>
+                                    <ul>
+                                        <li>Masukkan sumber data statistik</li>
+                                        <li>Contoh: "BPS Kabupaten", "Survei Desa 2024", "Data RT/RW"</li>
+                                        <li>Field ini opsional tapi disarankan untuk transparansi</li>
+                                    </ul>
+                                </div>
                             </div>
 
-                            <div class="warning-box">
-                                <h4>⚠️ Perhatian</h4>
-                                <p>Shortcode ini hanya dapat diakses oleh pengguna dengan role Administrator. Pengguna lain akan melihat pesan error.</p>
+                            <!-- Step 5 -->
+                            <div class="step-card step-indigo">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <h3>Input Data Berdasarkan Kategori</h3>
+
+                                    <div class="input-types">
+                                        <div class="input-type-card">
+                                            <h4>📊 Kategori Regular (Contoh: Agama, Jenis Kelamin)</h4>
+                                            <ul>
+                                                <li>Field akan muncul otomatis setelah memilih kategori</li>
+                                                <li>Isi angka untuk setiap field yang tersedia</li>
+                                                <li>Contoh untuk Agama: Islam: 1500, Kristen: 200, dll</li>
+                                                <li>Gunakan angka 0 jika tidak ada data</li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="input-type-card">
+                                            <h4>🏘️ Kategori RW Dinamis (Contoh: Penerima Bantuan per RW)</h4>
+                                            <ul>
+                                                <li>Akan muncul form RW 1 secara default</li>
+                                                <li>Klik tombol <strong>"+ Tambah RW"</strong> untuk menambah RW baru</li>
+                                                <li>Isi jumlah penerima untuk setiap RW</li>
+                                                <li>Klik <strong>"Hapus"</strong> untuk menghapus RW yang tidak diperlukan</li>
+                                                <li>RW akan otomatis ter-renumber jika ada yang dihapus</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 6 -->
+                            <div class="step-card step-gray">
+                                <div class="step-number">6</div>
+                                <div class="step-content">
+                                    <h3>Pengaturan Publikasi</h3>
+                                    <ul>
+                                        <li><strong>Centang "Tampilkan di publik"</strong> jika data siap dipublikasi</li>
+                                        <li>Biarkan tidak tercentang untuk menyimpan sebagai draft</li>
+                                        <li>Data draft tidak akan muncul di shortcode dan API publik</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Step 7 -->
+                            <div class="step-card step-red">
+                                <div class="step-number">7</div>
+                                <div class="step-content">
+                                    <h3>Simpan Data</h3>
+                                    <ul>
+                                        <li>Klik tombol <strong>"Simpan Data"</strong> untuk data baru</li>
+                                        <li>Klik tombol <strong>"Update Data"</strong> untuk edit data</li>
+                                        <li>Sistem akan menampilkan pesan konfirmasi jika berhasil</li>
+                                        <li>Data akan tersimpan dan bisa diakses melalui menu "Daftar Statistik"</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tips Section -->
+                        <div class="tips-section">
+                            <h3>💡 Tips & Best Practices</h3>
+                            <div class="tips-grid">
+                                <div class="tip-card tip-blue">
+                                    <h4>🎯 Konsistensi Data</h4>
+                                    <p>Pastikan format dan satuan data konsisten untuk setiap periode</p>
+                                </div>
+                                <div class="tip-card tip-green">
+                                    <h4>📅 Update Berkala</h4>
+                                    <p>Lakukan update data secara berkala sesuai periode yang ditentukan</p>
+                                </div>
+                                <div class="tip-card tip-yellow">
+                                    <h4>🔍 Verifikasi Data</h4>
+                                    <p>Selalu verifikasi data sebelum mempublikasikan ke publik</p>
+                                </div>
+                                <div class="tip-card tip-purple">
+                                    <h4>📊 Backup Data</h4>
+                                    <p>Lakukan backup data secara berkala untuk keamanan</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Troubleshooting -->
+                        <div class="troubleshooting-section">
+                            <h3>🚨 Troubleshooting</h3>
+                            <div class="troubleshooting-items">
+                                <div class="trouble-item">
+                                    <h4>Data tidak tersimpan?</h4>
+                                    <p>Pastikan semua field wajib terisi dan Anda memiliki hak akses admin</p>
+                                </div>
+                                <div class="trouble-item">
+                                    <h4>Field kategori tidak muncul?</h4>
+                                    <p>Refresh halaman dan pastikan JavaScript aktif di browser</p>
+                                </div>
+                                <div class="trouble-item">
+                                    <h4>Error saat menambah RW?</h4>
+                                    <p>Pastikan tidak ada field RW yang kosong sebelum menambah RW baru</p>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                     <!-- API Tab -->
-                    <div id="api" class="tab-content">
-                        <div class="section">
-                            <h2>🌐 REST API Endpoints</h2>
-                            <p>Plugin ini menyediakan REST API untuk mengakses data statistik secara programatis:</p>
+                <!-- Shortcodes Tab -->
+                <div id="shortcodes-tab" class="tab-content">
+                    <div class="doc-section">
+                        <div class="section-header">
+                            <h2>📊 Shortcodes</h2>
+                            <span class="badge badge-success">4 Shortcode Tersedia</span>
+                        </div>
 
-                            <h3>Base URL</h3>
+                        <!-- Display Shortcode -->
+                        <div class="shortcode-card">
+                            <div class="shortcode-header">
+                                <h3>1. Display Shortcode - Tampilan Card</h3>
+                                <span class="badge badge-primary">Populer</span>
+                            </div>
+                            <p>Menampilkan data statistik dalam format card yang menarik dan responsive</p>
                             <div class="code-block">
+                                <code>[statistic_display year="2024" category="agama" show_source="true"]</code>
                                 <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre><?php echo home_url('/wp-json/statistic/v1/'); ?></pre>
                             </div>
 
-                            <h3>1. GET /data - Semua Data</h3>
-                            <p>Mengambil semua data statistik dengan opsi filter.</p>
+                            <div class="parameters-table">
+                                <h4>Parameter yang tersedia:</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter</th>
+                                            <th>Nilai</th>
+                                            <th>Default</th>
+                                            <th>Keterangan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code>year</code></td>
+                                            <td>2024, 2023, dll</td>
+                                            <td>Semua tahun</td>
+                                            <td>Filter berdasarkan tahun</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>category</code></td>
+                                            <td>agama, jenis_kelamin, dll</td>
+                                            <td>Semua kategori</td>
+                                            <td>Filter berdasarkan kategori</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>published_only</code></td>
+                                            <td>true/false</td>
+                                            <td>true</td>
+                                            <td>Tampilkan hanya data yang dipublikasi</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>show_source</code></td>
+                                            <td>true/false</td>
+                                            <td>true</td>
+                                            <td>Tampilkan sumber data</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>show_year</code></td>
+                                            <td>true/false</td>
+                                            <td>true</td>
+                                            <td>Tampilkan tahun di header</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
 
+                        <!-- Table Shortcode -->
+                        <div class="shortcode-card">
+                            <div class="shortcode-header">
+                                <h3>2. Table Shortcode - Tampilan Tabel</h3>
+                                <span class="badge badge-success">Interaktif</span>
+                            </div>
+                            <p>Menampilkan data statistik dalam format tabel yang rapi</p>
                             <div class="code-block">
+                                <code>[statistic_table year="2024" limit="5" show_source="true"]</code>
                                 <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre>GET <?php echo home_url('/wp-json/statistic/v1/data'); ?>
-GET <?php echo home_url('/wp-json/statistic/v1/data?year=2024'); ?>
-GET <?php echo home_url('/wp-json/statistic/v1/data?category=agama'); ?>
-GET <?php echo home_url('/wp-json/statistic/v1/data?published=false'); ?></pre>
+                            </div>
+                            <div class="note">
+                                <p><strong>Parameter tambahan:</strong> <code>limit</code> - Batasi jumlah data yang ditampilkan (default: 10)</p>
+                            </div>
+                        </div>
+
+                        <!-- Chart Shortcode -->
+                        <div class="shortcode-card">
+                            <div class="shortcode-header">
+                                <h3>3. Chart Shortcode - Tampilan Grafik</h3>
+                                <span class="badge badge-warning">Baru</span>
+                            </div>
+                            <p>Menampilkan data statistik dalam format grafik interaktif dengan berbagai jenis chart</p>
+
+                            <div class="chart-types">
+                                <div class="chart-type">
+                                    <h5>Bar Chart (Vertikal)</h5>
+                                    <div class="code-block">
+                                        <code>[statistic_chart year="2024" category="agama" type="bar" height="400"]</code>
+                                        <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                                    </div>
+                                </div>
+
+                                <div class="chart-type">
+                                    <h5>Bar Chart (Horizontal) - Baru!</h5>
+                                    <div class="code-block">
+                                        <code>[statistic_chart year="2024" category="agama" type="horizontalBar" height="400"]</code>
+                                        <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                                    </div>
+                                </div>
+
+                                <div class="chart-type">
+                                    <h5>Pie Chart</h5>
+                                    <div class="code-block">
+                                        <code>[statistic_chart year="2024" category="agama" type="pie" height="400"]</code>
+                                        <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                                    </div>
+                                </div>
                             </div>
 
-                            <h4>Query Parameters:</h4>
-                            <table class="parameter-table">
+                            <div class="parameters-table">
+                                <h4>Parameter yang tersedia:</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter</th>
+                                            <th>Nilai</th>
+                                            <th>Default</th>
+                                            <th>Keterangan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code>year</code></td>
+                                            <td>2024, 2023, dll</td>
+                                            <td>Tahun sekarang</td>
+                                            <td><strong style="color: #d63638;">⚠️ Wajib diisi!</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>category</code></td>
+                                            <td>agama, jenis_kelamin, dll</td>
+                                            <td>-</td>
+                                            <td><strong style="color: #d63638;">⚠️ Wajib diisi!</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>type</code></td>
+                                            <td>bar, horizontalBar, pie, line, doughnut, radar</td>
+                                            <td>bar</td>
+                                            <td>Jenis grafik</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>height</code></td>
+                                            <td>300, 400, 500, dll</td>
+                                            <td>400</td>
+                                            <td>Tinggi grafik (pixel)</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Form Shortcode -->
+                        <div class="shortcode-card">
+                            <div class="shortcode-header">
+                                <h3>4. Form Shortcode - Form Input</h3>
+                                <span class="badge badge-danger">Admin Only</span>
+                            </div>
+                            <p>Menampilkan form input statistik di frontend (hanya untuk admin)</p>
+                            <div class="code-block">
+                                <code>[statistic_form]</code>
+                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                            </div>
+                            <div class="warning">
+                                <p><strong>⚠️ Penting:</strong> Shortcode ini hanya akan ditampilkan untuk user yang memiliki hak akses admin.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Tab -->
+                <div id="api-tab" class="tab-content">
+                    <div class="doc-section">
+                        <div class="section-header">
+                            <h2>🔌 REST API Endpoints</h2>
+                            <span class="badge badge-info">3 Endpoint</span>
+                        </div>
+
+                        <div class="api-endpoints">
+                            <div class="endpoint-card">
+                                <h3>1. Get All Statistics</h3>
+                                <div class="code-block">
+                                    <code>GET /wp-json/statistic/v1/data</code>
+                                    <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                                </div>
+                                <h4>Parameter Query:</h4>
+                                <ul>
+                                    <li><code>?published=false</code> - Tampilkan semua data (termasuk yang tidak dipublikasi)</li>
+                                    <li><code>?year=2024</code> - Filter berdasarkan tahun</li>
+                                    <li><code>?category=agama</code> - Filter berdasarkan kategori</li>
+                                </ul>
+                            </div>
+
+                            <div class="endpoint-card">
+                                <h3>2. Get Statistics by Year</h3>
+                                <div class="code-block">
+                                    <code>GET /wp-json/statistic/v1/data/2024</code>
+                                    <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                                </div>
+                            </div>
+
+                            <div class="endpoint-card">
+                                <h3>3. Get Specific Statistic</h3>
+                                <div class="code-block">
+                                    <code>GET /wp-json/statistic/v1/data/2024/agama</code>
+                                    <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="categories-table">
+                            <h3>📋 Kategori yang Tersedia</h3>
+                            <table>
                                 <thead>
                                     <tr>
-                                        <th>Parameter</th>
-                                        <th>Tipe</th>
-                                        <th>Default</th>
-                                        <th>Deskripsi</th>
+                                        <th>Kode Kategori</th>
+                                        <th>Nama Kategori</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td><span class="parameter-name">year</span></td>
-                                        <td><span class="parameter-type">integer</span></td>
-                                        <td>-</td>
-                                        <td>Filter berdasarkan tahun</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">category</span></td>
-                                        <td><span class="parameter-type">string</span></td>
-                                        <td>-</td>
-                                        <td>Filter berdasarkan kategori</td>
-                                    </tr>
-                                    <tr>
-                                        <td><span class="parameter-name">published</span></td>
-                                        <td><span class="parameter-type">boolean</span></td>
-                                        <td>true</td>
-                                        <td>Hanya data yang dipublikasi</td>
-                                    </tr>
+                                    <?php foreach ($this->get_categories() as $code => $name): ?>
+                                        <tr>
+                                            <td><code><?php echo esc_html($code); ?></code></td>
+                                            <td><?php echo esc_html($name); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
-
-                            <h3>2. GET /data/{year} - Data per Tahun</h3>
-                            <p>Mengambil semua data statistik untuk tahun tertentu.</p>
-
-                            <div class="code-block">
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre>GET <?php echo home_url('/wp-json/statistic/v1/data/2024'); ?></pre>
-                            </div>
-
-                            <h3>3. GET /data/{year}/{category} - Data Spesifik</h3>
-                            <p>Mengambil data statistik untuk tahun dan kategori tertentu.</p>
-
-                            <div class="code-block">
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre>GET <?php echo home_url('/wp-json/statistic/v1/data/2024/agama'); ?></pre>
-                            </div>
-
-                            <h3>Response Format</h3>
-                            <p>Semua endpoint mengembalikan data dalam format JSON:</p>
-
-                            <div class="code-block">
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre>{
-  "id": 1,
-  "year": 2024,
-  "category": "agama",
-  "category_name": "Agama",
-  "sumber": "Data Kependudukan 2024",
-  "data": {
-    "islam_laki_laki": 150,
-    "islam_perempuan": 145,
-    "kristen_laki_laki": 25,
-    "kristen_perempuan": 30
-  },
-  "is_published": true,
-  "created_at": "2024-01-15 10:30:00",
-  "updated_at": "2024-01-15 10:30:00"
-}</pre>
-                            </div>
-
-                            <h3>Contoh Penggunaan dengan JavaScript</h3>
-                            <div class="code-block">
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre>// Mengambil semua data
-fetch('<?php echo home_url('/wp-json/statistic/v1/data'); ?>')
-  .then(response => response.json())
-  .then(data => console.log(data));
-
-// Mengambil data tahun 2024
-fetch('<?php echo home_url('/wp-json/statistic/v1/data/2024'); ?>')
-  .then(response => response.json())
-  .then(data => console.log(data));
-
-// Mengambil data spesifik
-fetch('<?php echo home_url('/wp-json/statistic/v1/data/2024/agama'); ?>')
-  .then(response => response.json())
-  .then(data => console.log(data));</pre>
-                            </div>
                         </div>
                     </div>
+                </div>
 
-                     <!-- Features Tab -->
-                    <div id="features" class="tab-content">
-                        <div class="section">
-                            <h2>⚡ Fitur-Fitur Plugin</h2>
-
-                            <div class="feature-grid">
-                                <div class="feature-card">
-                                    <span class="feature-icon">🏷️</span>
-                                    <h4>Kategori Custom</h4>
-                                    <p>Buat dan kelola kategori statistik sesuai kebutuhan desa/kelurahan Anda dengan field yang dapat disesuaikan.</p>
-                                </div>
-
-                                <div class="feature-card">
-                                    <span class="feature-icon">👥</span>
-                                    <h4>Nested Gender Categories</h4>
-                                    <p>Kategori khusus dengan struktur nested untuk perbandingan data berdasarkan gender (laki-laki/perempuan).</p>
-                                </div>
-
-                                <div class="feature-card">
-                                    <span class="feature-icon">🏘️</span>
-                                    <h4>Dynamic RW Fields</h4>
-                                    <p>Field RW yang dapat ditambah/dikurangi secara dinamis sesuai dengan jumlah RW di wilayah Anda.</p>
-                                </div>
-
-                                <div class="feature-card">
-                                    <span class="feature-icon">📊</span>
-                                    <h4>Multiple Display Options</h4>
-                                    <p>Tampilkan data dalam berbagai format: card, tabel, dan grafik interaktif dengan Chart.js.</p>
-                                </div>
-
-                                <div class="feature-card">
-                                    <span class="feature-icon">🌐</span>
-                                    <h4>REST API</h4>
-                                    <p>Akses data statistik secara programatis melalui REST API untuk integrasi dengan sistem lain.</p>
-                                </div>
-
-                                <div class="feature-card">
-                                    <span class="feature-icon">🔒</span>
-                                    <h4>Permission Control</h4>
-                                    <p>Kontrol akses yang ketat - hanya administrator yang dapat mengelola data statistik.</p>
-                                </div>
-
-                                <div class="feature-card">
-                                    <span class="feature-icon">📱</span>
-                                    <h4>Responsive Design</h4>
-                                    <p>Tampilan yang responsif dan mobile-friendly untuk semua perangkat.</p>
-                                </div>
-
-                                <div class="feature-card">
-                                    <span class="feature-icon">🔍</span>
-                                    <h4>Advanced Filtering</h4>
-                                    <p>Filter data berdasarkan tahun, kategori, status publikasi dengan pencarian yang powerful.</p>
-                                </div>
-                            </div>
-
-                            <h3>Jenis Kategori yang Didukung</h3>
-
-                            <h4>1. Regular Categories</h4>
-                            <p>Kategori standar dengan field-field yang dapat disesuaikan. Contoh: Jenis Kelamin, Golongan Darah, Status Penduduk.</p>
-
-                            <h4>2. Nested Gender Categories</h4>
-                            <p>Kategori dengan struktur nested untuk perbandingan gender. Setiap item memiliki data terpisah untuk laki-laki dan perempuan. Contoh:</p>
-                            <ul>
-                                <li><strong>Agama:</strong> Islam (L/P), Kristen (L/P), Katolik (L/P), dll.</li>
-                                <li><strong>Pendidikan:</strong> SD (L/P), SMP (L/P), SMA (L/P), dll.</li>
-                                <li><strong>Pekerjaan:</strong> Petani (L/P), PNS (L/P), Pedagang (L/P), dll.</li>
-                            </ul>
-
-                            <h4>3. Dynamic RW Categories</h4>
-                            <p>Kategori dengan field RW yang dapat ditambah/dikurangi sesuai kebutuhan. Contoh: Penerima Bantuan per RW, UMKM per RW, dll.</p>
-
-                            <div class="info-box">
-                                <h4>💡 Tips</h4>
-                                <p>Gunakan nested gender categories untuk data yang memerlukan perbandingan berdasarkan jenis kelamin, dan dynamic RW categories untuk data yang perlu dipecah berdasarkan wilayah RW.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                     <!-- Examples Tab -->
-                    <div id="examples" class="tab-content">
-                        <div class="section">
+                <!-- Examples Tab -->
+                <div id="examples-tab" class="tab-content">
+                    <div class="doc-section">
+                        <div class="section-header">
                             <h2>💡 Contoh Penggunaan</h2>
+                            <span class="badge badge-success">Praktis</span>
+                        </div>
 
-                            <div class="example-box">
-                                <h4>📊 Menampilkan Data Agama dalam Card</h4>
-                                <div class="description">Menampilkan data statistik agama tahun 2024 dengan perbandingan gender dalam format card.</div>
-                                <div class="code-block">
-                                    <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                    <pre>[statistic_display year="2024" category="agama"]</pre>
-                                </div>
+                        <div class="example-card">
+                            <h3>📊 Contoh 1: Halaman Statistik Lengkap</h3>
+                            <p>Untuk membuat halaman yang menampilkan semua statistik tahun 2024:</p>
+                            <div class="code-block large">
+                                <pre><code>&lt;h2&gt;Statistik Desa Tahun 2024&lt;/h2&gt;
+[statistic_display year="2024"]
+
+&lt;h3&gt;Tabel Ringkasan&lt;/h3&gt;
+[statistic_table year="2024" limit="10"]</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
                             </div>
+                        </div>
 
-                            <div class="example-box">
-                                <h4>📋 Tabel Data Pendidikan</h4>
-                                <div class="description">Menampilkan data pendidikan dalam format tabel tanpa menampilkan sumber data.</div>
-                                <div class="code-block">
-                                    <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                    <pre>[statistic_table category="pendidikan_dalam_kk" show_source="false"]</pre>
-                                </div>
+                        <div class="example-card">
+                            <h3>📈 Contoh 2: Dashboard dengan Grafik</h3>
+                            <p>Untuk membuat dashboard dengan berbagai grafik:</p>
+                            <div class="code-block large">
+                                <pre><code>&lt;div class="row"&gt;
+  &lt;div class="col-md-6"&gt;
+    &lt;h3&gt;Data Agama (Pie Chart)&lt;/h3&gt;
+    [statistic_chart year="2024" category="agama" type="pie"]
+  &lt;/div&gt;
+  &lt;div class="col-md-6"&gt;
+    &lt;h3&gt;Data Jenis Kelamin (Bar Chart)&lt;/h3&gt;
+    [statistic_chart year="2024" category="jenis_kelamin" type="bar"]
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="row mt-4"&gt;
+  &lt;div class="col-12"&gt;
+    &lt;h3&gt;Data RW (Horizontal Bar)&lt;/h3&gt;
+    [statistic_chart year="2024" category="penerima_pemberian_makanan_tambahan" type="horizontalBar" height="300"]
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
                             </div>
+                        </div>
 
-                            <div class="example-box">
-                                <h4>📈 Grafik Pie Data Pekerjaan</h4>
-                                <div class="description">Menampilkan data pekerjaan tahun 2024 dalam bentuk grafik pie dengan tinggi 350px.</div>
-                                <div class="code-block">
-                                    <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                    <pre>[statistic_chart year="2024" category="pekerjaan" type="pie" height="350"]</pre>
-                                </div>
-                            </div>
-
-                            <div class="example-box">
-                                <h4>📊 Grafik Bar Horizontal Jenis Kelamin</h4>
-                                <div class="description">Menampilkan data jenis kelamin dalam bentuk grafik bar horizontal.</div>
-                                <div class="code-block">
-                                    <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                    <pre>[statistic_chart category="jenis_kelamin" type="horizontalBar"]</pre>
-                                </div>
-                            </div>
-
-                            <div class="example-box">
-                                <h4>🌐 Mengakses Data via API</h4>
-                                <div class="description">Contoh mengakses data statistik menggunakan JavaScript fetch API.</div>
-                                <div class="code-block">
-                                    <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                    <pre>// Mengambil data agama tahun 2024
-fetch('<?php echo home_url('/wp-json/statistic/v1/data/2024/agama'); ?>')
+                        <div class="example-card">
+                            <h3>🔧 Contoh 3: JavaScript untuk API</h3>
+                            <p>Menggunakan JavaScript untuk mengambil data via API:</p>
+                            <div class="code-block large">
+                                <pre><code>// Ambil semua data
+fetch('/wp-json/statistic/v1/data')
   .then(response => response.json())
   .then(data => {
-    console.log('Data Agama 2024:', data);
-    
-    // Menampilkan data Islam
-    const islamLaki = data.data.islam_laki_laki || 0;
-    const islamPerempuan = data.data.islam_perempuan || 0;
-    const totalIslam = islamLaki + islamPerempuan;
-    
-    console.log(`Total Pemeluk Islam: ${totalIslam} (L: ${islamLaki}, P: ${islamPerempuan})`);
-  })
-  .catch(error => console.error('Error:', error));</pre>
-                                </div>
-                            </div>
+    console.log('Semua data:', data);
+  });
 
-                            <div class="example-box">
-                                <h4>📱 Integrasi dengan jQuery</h4>
-                                <div class="description">Contoh menggunakan jQuery untuk menampilkan data dalam elemen HTML.</div>
-                                <div class="code-block">
-                                    <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                    <pre>$(document).ready(function() {
-    // Load data statistik
-    $.get('<?php echo home_url('/wp-json/statistic/v1/data?year=2024'); ?>', function(data) {
-        let html = '<div class="statistik-container">';
-        
-        data.forEach(function(item) {
-            html += `<div class="stat-item">
-                <h3>${item.category_name} (${item.year})</h3>
-                <div class="stat-data">`;
-            
-            // Loop through data
-            Object.keys(item.data).forEach(function(key) {
-                html += `<span class="stat-field">${key}: ${item.data[key]}</span>`;
-            });
-            
-            html += `</div></div>`;
-        });
-        
-        html += '</div>';
-        $('#statistik-display').html(html);
-    });
-});</pre>
-                                </div>
-                            </div>
-
-                            <h3>🎨 Custom CSS untuk Styling</h3>
-                            <p>Anda dapat menambahkan CSS custom untuk menyesuaikan tampilan:</p>
-
-                            <div class="code-block">
+// Ambil data spesifik
+fetch('/wp-json/statistic/v1/data/2024/agama')
+  .then(response => response.json())
+  .then(data => {
+    console.log('Data agama 2024:', data);
+  });</code></pre>
                                 <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                                <pre>/* Custom styling untuk statistic display */
-.statistic-display .card {
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    margin-bottom: 25px;
-}
-
-.statistic-display .card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 12px 12px 0 0;
-}
-
-.nested-gender-display .gender-card {
-    transition: transform 0.3s ease;
-}
-
-.nested-gender-display .gender-card:hover {
-    transform: translateY(-2px);
-}
-
-/* Custom styling untuk tabel */
-.statistic-table-wrapper .table {
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.statistic-table-wrapper .table thead th {
-    background: #f8f9fa;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}</pre>
                             </div>
+                        </div>
 
-                            <div class="info-box">
-                                <h4>💡 Tips Penggunaan</h4>
-                                <p>
-                                    • Gunakan parameter <code>published_only="false"</code> untuk menampilkan data draft (hanya untuk admin)<br>
-                                    • Kombinasikan beberapa shortcode dalam satu halaman untuk tampilan yang lebih komprehensif<br>
-                                    • Gunakan API untuk membuat dashboard custom atau integrasi dengan aplikasi lain<br>
-                                    • Manfaatkan fitur caching browser dengan mengatur header HTTP yang tepat
-                                </p>
+                        <div class="best-practices">
+                            <h3>💡 Tips & Best Practices</h3>
+                            <div class="tips-grid">
+                                <div class="tip-card tip-blue">
+                                    <h4>🎨 Responsive Design</h4>
+                                    <p>Semua shortcode sudah menggunakan Bootstrap dan responsive</p>
+                                </div>
+                                <div class="tip-card tip-green">
+                                    <h4>⚡ Performance</h4>
+                                    <p>Gunakan parameter filter untuk membatasi data yang ditampilkan</p>
+                                </div>
+                                <div class="tip-card tip-yellow">
+                                    <h4>🔒 Security</h4>
+                                    <p>API hanya menampilkan data yang dipublikasi secara default</p>
+                                </div>
+                                <div class="tip-card tip-purple">
+                                    <h4>🎯 Customization</h4>
+                                    <p>Anda bisa menambahkan CSS custom untuk styling tambahan</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <style>
+                /* Documentation Styling - White and Gray Theme */
+                .documentation-container { background: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; margin: 20px 0; }
+                .doc-header { background: linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%); padding: 30px; text-align: center; border-bottom: 1px solid #dee2e6; }
+                .doc-header h1 { margin: 0 0 10px 0; color: #495057; font-size: 28px; font-weight: 600; }
+                .doc-subtitle { color: #6c757d; font-size: 16px; margin: 0; max-width: 600px; margin: 0 auto; }
+                .doc-tabs { display: flex; background: #f8f9fa; border-bottom: 1px solid #dee2e6; overflow-x: auto; }
+                .tab-button { background: none; border: none; padding: 15px 25px; cursor: pointer; font-size: 14px; font-weight: 500; color: #6c757d; border-bottom: 3px solid transparent; transition: all .3s ease; white-space: nowrap; }
+                .tab-button:hover { background: #e9ecef; color: #495057; }
+                .tab-button.active { color: #495057; border-bottom-color: #007bff; background: #ffffff; }
+                .tab-content { display: none; padding: 30px; }
+                .tab-content.active { display: block; }
+                .doc-section { max-width: 1000px; margin: 0 auto; }
+                .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #f8f9fa; }
+                .section-header h2 { margin: 0; color: #495057; font-size: 24px; font-weight: 600; }
+                .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+                .badge-primary { background: #007bff; color: #fff; }
+                .badge-success { background: #28a745; color: #fff; }
+                .badge-warning { background: #ffc107; color: #212529; }
+                .badge-danger { background: #dc3545; color: #fff; }
+                .badge-info { background: #17a2b8; color: #fff; }
+                .tutorial-steps { margin-bottom: 40px; }
+                .step-card { display: flex; margin-bottom: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.1); overflow: hidden; border-left: 4px solid; }
+                .step-blue{border-left-color:#007bff}.step-green{border-left-color:#28a745}.step-yellow{border-left-color:#ffc107}.step-purple{border-left-color:#6f42c1}.step-indigo{border-left-color:#6610f2}.step-gray{border-left-color:#6c757d}.step-red{border-left-color:#dc3545}
+                .step-number { background: #f8f9fa; width: 60px; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; color:#495057; }
+                .step-content { padding: 20px; flex: 1; }
+                .step-content h3 { margin: 0 0 15px 0; color: #495057; font-size: 18px; font-weight: 600; }
+                .step-content ul { margin: 0; padding-left: 20px; }
+                .step-content li { margin-bottom: 8px; color: #6c757d; line-height: 1.5; }
+                .category-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap: 10px; margin-top: 15px; }
+                .category-item { background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef; }
+                .category-item code { background: #e9ecef; color:#495057; padding:2px 6px; border-radius:3px; font-size:11px; font-weight:600; display:block; margin-bottom:5px; }
+                .category-item span { color:#6c757d; font-size:13px; }
+                .category-item.more { background:#e9ecef; text-align:center; font-style: italic; color:#6c757d; }
+                .input-types{ margin-top:15px; }
+                .input-type-card { background:#f8f9fa; padding:15px; border-radius:6px; margin-bottom:15px; border:1px solid #e9ecef; }
+                .input-type-card h4 { margin:0 0 10px 0; color:#495057; font-size:16px; }
+                .input-type-card li { margin-bottom:5px; color:#6c757d; font-size:14px; }
+                .tips-section { background:#f8f9fa; padding:25px; border-radius:8px; margin-bottom:30px; border:1px solid #e9ecef; }
+                .tips-section h3 { margin:0 0 20px 0; color:#495057; font-size:20px; font-weight:600; }
+                .tips-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap:15px; }
+                .tip-card { background:#fff; padding:15px; border-radius:6px; border-left:4px solid; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+                .tip-blue{border-left-color:#007bff}.tip-green{border-left-color:#28a745}.tip-yellow{border-left-color:#ffc107}.tip-purple{border-left-color:#6f42c1}
+                .tip-card h4 { margin:0 0 8px 0; color:#495057; font-size:14px; font-weight:600; }
+                .tip-card p { margin:0; color:#6c757d; font-size:13px; line-height:1.4; }
+                .troubleshooting-section{ background:#fff5f5; padding:25px; border-radius:8px; border:1px solid #fed7d7; }
+                .troubleshooting-section h3{ margin:0 0 20px 0; color:#c53030; font-size:20px; font-weight:600; }
+                .troubleshooting-items{ display:grid; gap:15px; }
+                .trouble-item{ background:#fff; padding:15px; border-radius:6px; border-left:4px solid #dc3545; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+                .trouble-item h4{ margin:0 0 8px 0; color:#c53030; font-size:14px; font-weight:600; }
+                .trouble-item p{ margin:0; color:#6c757d; font-size:13px; line-height:1.4; }
+                .shortcode-card{ background:#fff; border:1px solid #e9ecef; border-radius:8px; margin-bottom:25px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+                .shortcode-header{ background:#f8f9fa; padding:15px 20px; border-bottom:1px solid #e9ecef; display:flex; justify-content:space-between; align-items:center; }
+                .shortcode-header h3{ margin:0; color:#495057; font-size:18px; font-weight:600; }
+                .shortcode-card p{ padding:0 20px; margin:15px 0; color:#6c757d; line-height:1.5; }
+                .code-block{ background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:15px; margin:15px 20px; position:relative; font-family:'Courier New', monospace; }
+                .code-block.large{ margin:15px 0; }
+                .code-block code{ color:#e83e8c; font-weight:500; font-size:14px; }
+                .code-block pre{ margin:0; white-space:pre-wrap; word-wrap:break-word; }
+                .copy-btn{ position:absolute; top:10px; right:10px; background:#007bff; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:500; transition: background .3s; }
+                .copy-btn:hover{ background:#0056b3; }
+                .parameters-table{ padding:0 20px 20px; }
+                .parameters-table h4{ margin:20px 0 15px 0; color:#495057; font-size:16px; font-weight:600; }
+                .parameters-table table{ width:100%; border-collapse:collapse; border:1px solid #e9ecef; border-radius:6px; overflow:hidden; }
+                .parameters-table th{ background:#f8f9fa; padding:12px; text-align:left; font-weight:600; color:#495057; border-bottom:1px solid #e9ecef; font-size:13px; }
+                .parameters-table td{ padding:10px 12px; border-bottom:1px solid #f8f9fa; color:#6c757d; font-size:13px; vertical-align:top; }
+                .parameters-table code{ background:#f8f9fa; color:#e83e8c; padding:2px 6px; border-radius:3px; font-size:12px; font-weight:500; }
+                .chart-types{ padding:0 20px; }
+                .chart-type{ margin-bottom:15px; }
+                .chart-type h5{ margin:0 0 8px 0; color:#495057; font-size:14px; font-weight:600; }
+                .note{ background:#e7f3ff; border:1px solid #b3d9ff; border-radius:6px; padding:15px; margin:15px 20px 20px; }
+                .note p{ margin:0; color:#0066cc; font-size:14px; }
+                .warning{ background:#fff3cd; border:1px solid #ffeaa7; border-radius:6px; padding:15px; margin:15px 20px 20px; }
+                .warning p{ margin:0; color:#856404; font-size:14px; }
+                .api-endpoints{ margin-bottom:30px; }
+                .endpoint-card{ background:#fff; border:1px solid #e9ecef; border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+                .endpoint-card h3{ margin:0 0 15px 0; color:#495057; font-size:18px; font-weight:600; }
+                .endpoint-card h4{ margin:15px 0 10px 0; color:#495057; font-size:14px; font-weight:600; }
+                .endpoint-card ul{ margin:0; padding-left:20px; }
+                .endpoint-card li{ margin-bottom:5px; color:#6c757d; font-size:14px; }
+                .categories-table{ background:#f8f9fa; padding:20px; border-radius:8px; border:1px solid #e9ecef; }
+                .categories-table h3{ margin:0 0 15px 0; color:#495057; font-size:18px; font-weight:600; }
+                .categories-table table{ width:100%; border-collapse:collapse; background:#fff; border-radius:6px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+                .categories-table th{ background:#495057; color:#fff; padding:12px; text-align:left; font-weight:600; font-size:13px; }
+                .categories-table td{ padding:10px 12px; border-bottom:1px solid #f8f9fa; color:#6c757d; font-size:13px; }
+                .categories-table code{ background:#f8f9fa; color:#e83e8c; padding:2px 6px; border-radius:3px; font-size:12px; font-weight:500; }
+                .example-card{ background:#fff; border:1px solid #e9ecef; border-radius:8px; padding:20px; margin-bottom:25px; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+                .example-card h3{ margin:0 0 10px 0; color:#495057; font-size:18px; font-weight:600; }
+                .example-card p{ margin:0 0 15px 0; color:#6c757d; line-height:1.5; }
+                .best-practices{ background:#f8f9fa; padding:25px; border-radius:8px; border:1px solid #e9ecef; margin-top:30px; }
+                .best-practices h3{ margin:0 0 20px 0; color:#495057; font-size:20px; font-weight:600; }
+                @media (max-width:768px){ .doc-header{padding:20px} .doc-header h1{font-size:24px} .doc-subtitle{font-size:14px} .tab-content{padding:20px} .section-header{flex-direction:column; align-items:flex-start; gap:10px} .step-card{flex-direction:column} .step-number{width:100%; height:50px} .category-grid{grid-template-columns:1fr} .tips-grid{grid-template-columns:1fr} .code-block{margin:15px 0; font-size:12px} .copy-btn{position:static; margin-top:10px; width:100%} .parameters-table{overflow-x:auto} .categories-table{overflow-x:auto} }
+            </style>
+
             <script>
-                function showTab(tabId, element) {
-                    // Hide all tab contents
-                    document.querySelectorAll('.tab-content').forEach(tab => {
-                        tab.classList.remove('active');
-                    });
-
-                    // Remove active class from all nav links
-                    document.querySelectorAll('.nav-link').forEach(link => {
-                        link.classList.remove('active');
-                    });
-
-                    // Show selected tab content
-                    document.getElementById(tabId).classList.add('active');
-
-                    // Add active class to clicked nav link
-                    element.classList.add('active');
+                // Tab functionality
+                function showTab(tabName) {
+                    const tabContents = document.querySelectorAll('.tab-content');
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    const tabButtons = document.querySelectorAll('.tab-button');
+                    tabButtons.forEach(button => button.classList.remove('active'));
+                    document.getElementById(tabName + '-tab').classList.add('active');
+                    event.target.classList.add('active');
                 }
 
+                // Copy code functionality
                 function copyCode(button) {
-                    const codeBlock = button.nextElementSibling;
-                    const text = codeBlock.textContent;
-
+                    const codeBlock = button.parentNode;
+                    const code = codeBlock.querySelector('code, pre');
+                    const text = code.textContent;
                     navigator.clipboard.writeText(text).then(function () {
                         const originalText = button.textContent;
                         button.textContent = '✅ Copied!';
                         button.style.background = '#28a745';
-
-                        setTimeout(function () {
+                        setTimeout(() => {
                             button.textContent = originalText;
                             button.style.background = '#007bff';
                         }, 2000);
                     }).catch(function (err) {
                         console.error('Could not copy text: ', err);
-                        alert('Failed to copy code. Please copy manually.');
+                        alert('Kode berhasil disalin ke clipboard');
                     });
                 }
             </script>
