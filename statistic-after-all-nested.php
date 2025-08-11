@@ -33,7 +33,7 @@ class StatisticPlugin
     private $table_name;
     private $categories_table;
     private $fields_table;
-    private $version = '2.1.0';
+    private $version = '2.1.1';
 
     public function __construct()
     {
@@ -522,7 +522,7 @@ class StatisticPlugin
             'status_perkawinan' => 'Status Perkawinan',
             'kategori_umur' => 'Kategori Umur',
             'rentang_umur' => 'Rentang Umur',
-            
+
             // Kategori regular
             'jenis_kelamin' => 'Jenis Kelamin',
             'golongan_darah' => 'Golongan Darah',
@@ -532,7 +532,7 @@ class StatisticPlugin
             'status_covid' => 'Status Covid',
             'status_penduduk' => 'Status Penduduk',
             'warga_negara' => 'Warga Negara',
-            
+
             // Kategori dynamic RW
             'penerima_pemberian_makanan_tambahan' => 'Penerima Pemberian Makanan Tambahan',
             'jumlah_penerima_rastrada_berdasarkan_rw' => 'Jumlah Penerima Rastrada Berdasarkan RW',
@@ -540,7 +540,7 @@ class StatisticPlugin
             'jumlah_umkm_berdasarkan_rw' => 'Jumlah UMKM Berdasarkan RW',
             'jumlah_guru_ngaji_berdasarkan_lokasi_rw' => 'Jumlah Guru Ngaji Berdasarkan Lokasi RW',
             'jumlah_guru_ngaji_yang_mendapatkan_insentif_berdasarkan_wilayah' => 'Jumlah Guru Ngaji yang Mendapatkan Insentif Berdasarkan Wilayah',
-            
+
             // Kategori regular lainnya
             'apbd_pelaksanaan' => 'APBD Pelaksanaan',
             'apbd_pembelanjaan' => 'APBD Pembelanjaan',
@@ -854,7 +854,7 @@ class StatisticPlugin
     private function generate_nested_gender_fields($category, $existing_data = array())
     {
         $nested_structure = $this->get_nested_gender_structure();
-        
+
         if (!isset($nested_structure[$category])) {
             return '<p>Struktur nested gender tidak ditemukan untuk kategori ini.</p>';
         }
@@ -871,17 +871,17 @@ class StatisticPlugin
         foreach ($nested_structure[$category] as $main_key => $gender_data) {
             // Extract main category name (remove gender part)
             $main_name = explode(' - ', reset($gender_data))[0];
-            
+
             $html .= '<div class="nested-item">';
             $html .= '<div class="nested-item-header">';
             $html .= '<h5>' . esc_html($main_name) . '</h5>';
             $html .= '</div>';
             $html .= '<div class="nested-item-content">';
-            
+
             foreach ($gender_data as $gender_key => $label) {
                 $field_name = $category . '_' . $main_key . '_' . $gender_key;
                 $field_value = isset($existing_data[$main_key . '_' . $gender_key]) ? $existing_data[$main_key . '_' . $gender_key] : '';
-                
+
                 $html .= '<div class="gender-field">';
                 $html .= '<label for="' . esc_attr($field_name) . '" class="form-label">';
                 $html .= '<span class="gender-icon">' . ($gender_key === 'laki_laki' ? '👨' : '👩') . '</span>';
@@ -890,7 +890,7 @@ class StatisticPlugin
                 $html .= '<input type="number" id="' . esc_attr($field_name) . '" name="' . esc_attr($field_name) . '" min="0" step="1" class="form-control" value="' . esc_attr($field_value) . '" />';
                 $html .= '</div>';
             }
-            
+
             $html .= '</div>';
             $html .= '</div>';
         }
@@ -1036,14 +1036,14 @@ class StatisticPlugin
     private function render_nested_gender_display($category, $data)
     {
         $nested_structure = $this->get_nested_gender_structure();
-        
+
         if (!isset($nested_structure[$category])) {
             echo '<p>Struktur data tidak ditemukan.</p>';
             return;
         }
 
         echo '<div class="nested-gender-display">';
-        
+
         // Group data by main category
         $grouped_data = array();
         foreach ($data as $key => $value) {
@@ -1052,7 +1052,7 @@ class StatisticPlugin
             if (count($parts) >= 2) {
                 $gender = array_pop($parts); // Get last part (laki_laki or perempuan)
                 $main_key = implode('_', $parts); // Get remaining parts
-                
+
                 if (!isset($grouped_data[$main_key])) {
                     $grouped_data[$main_key] = array();
                 }
@@ -1061,20 +1061,21 @@ class StatisticPlugin
         }
 
         foreach ($nested_structure[$category] as $main_key => $gender_labels) {
-            if (!isset($grouped_data[$main_key])) continue;
-            
+            if (!isset($grouped_data[$main_key]))
+                continue;
+
             $main_name = explode(' - ', reset($gender_labels))[0];
             $laki_laki = $grouped_data[$main_key]['laki_laki'] ?? 0;
             $perempuan = $grouped_data[$main_key]['perempuan'] ?? 0;
             $total = $laki_laki + $perempuan;
-            
+
             echo '<div class="nested-item-display mb-3">';
             echo '<div class="nested-header">';
             echo '<h6 class="mb-2">' . esc_html($main_name) . '</h6>';
             echo '</div>';
             echo '<div class="nested-content">';
             echo '<div class="row">';
-            
+
             // Male column
             echo '<div class="col-md-4">';
             echo '<div class="gender-card male">';
@@ -1087,7 +1088,7 @@ class StatisticPlugin
             }
             echo '</div>';
             echo '</div>';
-            
+
             // Female column
             echo '<div class="col-md-4">';
             echo '<div class="gender-card female">';
@@ -1100,7 +1101,7 @@ class StatisticPlugin
             }
             echo '</div>';
             echo '</div>';
-            
+
             // Total column
             echo '<div class="col-md-4">';
             echo '<div class="gender-card total">';
@@ -1110,12 +1111,12 @@ class StatisticPlugin
             echo '<div class="gender-percentage">100%</div>';
             echo '</div>';
             echo '</div>';
-            
+
             echo '</div>';
             echo '</div>';
             echo '</div>';
         }
-        
+
         echo '</div>';
 
         // Add CSS for nested gender display
@@ -2318,7 +2319,7 @@ class StatisticPlugin
                         dibuat di sini akan tersedia di form input statistik.</p>
                 </div>
 
-                                   <!-- Actions -->
+                <!-- Actions -->
                 <div class="category-actions">
                     <div class="summary">
                         <span>📊 Total Kategori: <strong><?php echo count($categories); ?></strong></span>
@@ -2332,7 +2333,7 @@ class StatisticPlugin
                     </button>
                 </div>
 
-                 Categories Grid 
+
                 <div class="categories-grid">
                     <?php if (!empty($categories)): ?>
                         <?php foreach ($categories as $category): ?>
@@ -2346,16 +2347,21 @@ class StatisticPlugin
                             <div class="category-card">
                                 <div class="category-card-header">
                                     <h3 class="category-name"><?php echo esc_html($category->category_name); ?></h3>
-                                    <span
-                                        class="category-type-badge <?php 
-                                        if ($category->category_type === 'regular') echo 'type-regular';
-                                        elseif ($category->category_type === 'dynamic_rw') echo 'type-dynamic';
-                                        else echo 'type-nested';
-                                        ?>">
-                                        <?php 
-                                        if ($category->category_type === 'regular') echo 'Regular';
-                                        elseif ($category->category_type === 'dynamic_rw') echo 'Dynamic RW';
-                                        else echo 'Nested Gender';
+                                    <span class="category-type-badge <?php
+                                    if ($category->category_type === 'regular')
+                                        echo 'type-regular';
+                                    elseif ($category->category_type === 'dynamic_rw')
+                                        echo 'type-dynamic';
+                                    else
+                                        echo 'type-nested';
+                                    ?>">
+                                        <?php
+                                        if ($category->category_type === 'regular')
+                                            echo 'Regular';
+                                        elseif ($category->category_type === 'dynamic_rw')
+                                            echo 'Dynamic RW';
+                                        else
+                                            echo 'Nested Gender';
                                         ?>
                                     </span>
                                 </div>
@@ -2390,7 +2396,8 @@ class StatisticPlugin
                                     <?php elseif ($category->category_type === 'nested_gender'): ?>
                                         <div class="category-fields">
                                             <h4>👥 Nested Gender Fields</h4>
-                                            <p style="font-size: 12px; color: #646970; margin: 0;">Field dengan struktur nested untuk perbandingan gender</p>
+                                            <p style="font-size: 12px; color: #646970; margin: 0;">Field dengan struktur nested untuk
+                                                perbandingan gender</p>
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -2438,7 +2445,7 @@ class StatisticPlugin
                 </div>
             </div>
 
-             Category Modal 
+
             <div id="category-modal" class="modal-overlay">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -2504,7 +2511,7 @@ class StatisticPlugin
                     <div class="modal-body">
                         <input type="hidden" id="fields-category-code">
 
-                         <!-- Add New Field Form -->
+                        <!-- Add New Field Form -->
                         <div class="form-group">
                             <label class="form-label">Tambah Field Baru:</label>
                             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -2518,14 +2525,14 @@ class StatisticPlugin
                                 field: bebas.</small>
                         </div>
 
-                         <!-- Fields List -->
+                        <!-- Fields List -->
                         <div class="fields-container">
                             <div class="fields-header">
                                 <h4>📝 Daftar Fields</h4>
                                 <span id="fields-count">0 fields</span>
                             </div>
                             <div class="fields-list-container" id="fields-list">
-                                 <!-- Fields will be loaded here -->
+                                <!-- Fields will be loaded here -->
                             </div>
                         </div>
                     </div>
@@ -3673,7 +3680,7 @@ class StatisticPlugin
                         if (count($parts) >= 2) {
                             $gender = array_pop($parts);
                             $main_key = implode('_', $parts);
-                            
+
                             if (!isset($grouped_data[$main_key])) {
                                 $grouped_data[$main_key] = array();
                             }
@@ -3682,13 +3689,14 @@ class StatisticPlugin
                     }
 
                     foreach ($nested_structure[$row->category] as $main_key => $gender_labels) {
-                        if (!isset($grouped_data[$main_key])) continue;
-                        
+                        if (!isset($grouped_data[$main_key]))
+                            continue;
+
                         $main_name = explode(' - ', reset($gender_labels))[0];
                         $laki_laki = $grouped_data[$main_key]['laki_laki'] ?? 0;
                         $perempuan = $grouped_data[$main_key]['perempuan'] ?? 0;
                         $total = $laki_laki + $perempuan;
-                        
+
                         echo '<tr>';
                         echo '<td>' . esc_html($main_name) . ' - Laki-laki</td>';
                         echo '<td>' . esc_html($laki_laki) . '</td>';
@@ -3862,7 +3870,7 @@ class StatisticPlugin
                     if (count($parts) >= 2) {
                         $gender = array_pop($parts);
                         $main_key = implode('_', $parts);
-                        
+
                         if (!isset($grouped_data[$main_key])) {
                             $grouped_data[$main_key] = 0;
                         }
@@ -4228,7 +4236,7 @@ class StatisticPlugin
                             <input type="hidden" name="original_category" value="<?php echo esc_attr($edit_data->category); ?>">
                         <?php endif; ?>
 
-                                                   <!-- Tahun Field -->
+                        <!-- Tahun Field -->
                         <div class="form-group">
                             <label for="year" class="form-label">Tahun:</label>
                             <select name="year" id="year" required class="form-select" <?php echo $is_edit ? 'disabled' : ''; ?>>
@@ -4243,7 +4251,7 @@ class StatisticPlugin
                             <?php endif; ?>
                         </div>
 
-                                                   <!-- Kategori Field -->
+                        <!-- Kategori Field -->
                         <div class="form-group">
                             <label for="category" class="form-label">Kategori:</label>
                             <select name="category" id="category" required class="form-select" <?php echo $is_edit ? 'disabled' : ''; ?>>
@@ -4259,7 +4267,7 @@ class StatisticPlugin
                             <?php endif; ?>
                         </div>
 
-                                                   <!-- Sumber Data Field -->
+                        <!-- Sumber Data Field -->
                         <div class="form-group">
                             <label for="sumber" class="form-label">Sumber Data:</label>
                             <input type="text" id="sumber" name="sumber" class="form-control" placeholder="Masukkan sumber data"
@@ -4270,7 +4278,7 @@ class StatisticPlugin
                             <?php echo $this->generate_category_fields($is_edit ? $edit_data->category : '', $is_edit ? $edit_data : null); ?>
                         </div>
 
-                                                   <!-- Tampilkan di Publik Checkbox -->
+                        <!-- Tampilkan di Publik Checkbox -->
                         <div class="checkbox-group">
                             <input type="checkbox" name="is_published" value="1" <?php echo ($is_edit ? ($edit_data->is_published ? 'checked' : '') : 'checked'); ?> class="form-check-input"
                                 id="is_published">
@@ -4811,7 +4819,7 @@ class StatisticPlugin
                     </div>
                 </div>
 
-                 Main Content 
+
                 <div class="dashboard-content">
                     <div class="main-content">
                         <h2>🚀 Aksi Cepat</h2>
@@ -4861,7 +4869,7 @@ class StatisticPlugin
                     </div>
 
                     <div class="sidebar-content">
-                         Year Statistics 
+
                         <div class="widget">
                             <h3>📅 Statistik per Tahun</h3>
                             <?php if (!empty($year_stats)): ?>
@@ -4878,14 +4886,15 @@ class StatisticPlugin
                             <?php endif; ?>
                         </div>
 
-                         Category Statistics 
+
                         <div class="widget">
                             <h3>🏷️ Kategori Populer</h3>
                             <?php if (!empty($category_stats)): ?>
                                 <ul class="stats-list">
                                     <?php foreach ($category_stats as $stat): ?>
                                         <li>
-                                            <span class="label"><?php echo esc_html($categories[$stat->category] ?? $stat->category); ?></span>
+                                            <span
+                                                class="label"><?php echo esc_html($categories[$stat->category] ?? $stat->category); ?></span>
                                             <span class="value"><?php echo esc_html($stat->count); ?> data</span>
                                         </li>
                                     <?php endforeach; ?>
@@ -4895,7 +4904,7 @@ class StatisticPlugin
                             <?php endif; ?>
                         </div>
 
-                         Quick Info 
+
                         <div class="widget">
                             <h3>ℹ️ Informasi</h3>
                             <ul class="stats-list">
@@ -4924,7 +4933,7 @@ class StatisticPlugin
         <?php
     }
 
-        /**
+    /**
      * Admin list page - IMPROVED VERSION WITH BETTER TABLE DESIGN
      * Halaman daftar data statistik dengan tabel yang lebih rapi dan modern
      */
@@ -5370,8 +5379,7 @@ class StatisticPlugin
                             <select name="filter_category">
                                 <option value="">Semua Kategori</option>
                                 <?php foreach ($categories as $key => $name): ?>
-                                    <option value="<?php echo esc_attr($key); ?>" <?php selected($filter_category, $key); ?>
-                                        >
+                                    <option value="<?php echo esc_attr($key); ?>" <?php selected($filter_category, $key); ?>>
                                         <?php echo esc_html($name); ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -5820,14 +5828,15 @@ class StatisticPlugin
             <div class="documentation-container">
                 <div class="doc-header">
                     <h1>📚 Dokumentasi Plugin Statistik Desa/Kelurahan</h1>
-                    <p class="doc-subtitle">Panduan lengkap cara input data, penggunaan shortcode dan API untuk menampilkan statistik</p>
+                    <p class="doc-subtitle">Panduan lengkap cara input data, penggunaan shortcode dan API untuk menampilkan
+                        statistik</p>
                 </div>
 
                 <div class="doc-tabs">
                     <button class="tab-button active" onclick="showTab('tutorial')">📝 Tutorial Input</button>
                     <button class="tab-button" onclick="showTab('shortcodes')">📊 Shortcodes</button>
                     <button class="tab-button" onclick="showTab('api')">🔌 REST API</button>
-                    <button class="tab-button" onclick="showTab('examples')">💡 Contoh Penggunaan</button>
+
                 </div>
 
                 <!-- Tutorial Tab -->
@@ -5876,13 +5885,14 @@ class StatisticPlugin
                                         $categories = $this->get_categories();
                                         $count = 0;
                                         foreach ($categories as $code => $name):
-                                            if ($count >= 9) break; // Limit to 9 for display
-                                        ?>
+                                            if ($count >= 9)
+                                                break; // Limit to 9 for display
+                                            ?>
                                             <div class="category-item">
                                                 <code><?php echo esc_html($code); ?></code>
                                                 <span><?php echo esc_html($name); ?></span>
                                             </div>
-                                        <?php
+                                            <?php
                                             $count++;
                                         endforeach;
                                         ?>
@@ -5951,8 +5961,28 @@ class StatisticPlugin
                             </div>
 
                             <!-- Step 7 -->
-                            <div class="step-card step-red">
+                            <div class="step-card step-gray">
                                 <div class="step-number">8</div>
+                                <div class="step-content">
+                                    <h3>Mengelola Kategori</h3>
+                                    <ul>
+                                        <li>Buka menu <strong>Statistik Desa</strong> > <strong>Kelola Kategori</strong> untuk
+                                            menambah atau mengedit kategori</li>
+                                        <li>Klik tombol <strong>Tambah Kategori Baru</strong> untuk membuat kategori baru</li>
+                                        <li>Pilih tipe kategori sesuai kebutuhan: <strong>Regular</strong> (field tetap),
+                                            <strong>Dynamic RW</strong> (field RW dinamis), atau <strong>Nested Gender</strong>
+                                            (perbandingan gender)</li>
+                                        <li>Untuk kategori Regular dan Nested Gender, klik tombol <strong>Fields</strong> untuk
+                                            mengelola field yang tersedia</li>
+                                        <li>Pastikan menggunakan <strong>kode kategori</strong> yang unik dengan huruf kecil dan
+                                            underscore</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Step 8 -->
+                            <div class="step-card step-red">
+                                <div class="step-number">9</div>
                                 <div class="step-content">
                                     <h3>Simpan Data</h3>
                                     <ul>
@@ -6088,7 +6118,8 @@ class StatisticPlugin
                                 <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
                             </div>
                             <div class="note">
-                                <p><strong>Parameter tambahan:</strong> <code>limit</code> - Batasi jumlah data yang ditampilkan (default: 10)</p>
+                                <p><strong>Parameter tambahan:</strong> <code>limit</code> - Batasi jumlah data yang ditampilkan
+                                    (default: 10)</p>
                             </div>
                         </div>
 
@@ -6179,7 +6210,8 @@ class StatisticPlugin
                                 <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
                             </div>
                             <div class="warning">
-                                <p><strong>⚠️ Penting:</strong> Shortcode ini hanya akan ditampilkan untuk user yang memiliki hak akses admin.</p>
+                                <p><strong>⚠️ Penting:</strong> Shortcode ini hanya akan ditampilkan untuk user yang memiliki
+                                    hak akses admin.</p>
                             </div>
                         </div>
                     </div>
@@ -6202,7 +6234,8 @@ class StatisticPlugin
                                 </div>
                                 <h4>Parameter Query:</h4>
                                 <ul>
-                                    <li><code>?published=false</code> - Tampilkan semua data (termasuk yang tidak dipublikasi)</li>
+                                    <li><code>?published=false</code> - Tampilkan semua data (termasuk yang tidak dipublikasi)
+                                    </li>
                                     <li><code>?year=2024</code> - Filter berdasarkan tahun</li>
                                     <li><code>?category=agama</code> - Filter berdasarkan kategori</li>
                                 </ul>
@@ -6247,224 +6280,754 @@ class StatisticPlugin
                     </div>
                 </div>
 
-                <!-- Examples Tab -->
-                <div id="examples-tab" class="tab-content">
-                    <div class="doc-section">
-                        <div class="section-header">
-                            <h2>💡 Contoh Penggunaan</h2>
-                            <span class="badge badge-success">Praktis</span>
-                        </div>
 
-                        <div class="example-card">
-                            <h3>📊 Contoh 1: Halaman Statistik Lengkap</h3>
-                            <p>Untuk membuat halaman yang menampilkan semua statistik tahun 2024:</p>
-                            <div class="code-block large">
-                                <pre><code>&lt;h2&gt;Statistik Desa Tahun 2024&lt;/h2&gt;
-[statistic_display year="2024" category="agama" show_source="true" show_year="true"]
- 
- &lt;h3&gt;Tabel Ringkasan&lt;/h3&gt;
-[statistic_table year="2024" limit="10" show_source="true"]</code></pre>
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                            </div>
-                        </div>
 
-                        <div class="example-card">
-                            <h3>📈 Contoh 2: Dashboard dengan Grafik</h3>
-                            <p>Untuk membuat dashboard dengan berbagai grafik:</p>
-                            <div class="code-block large">
-                                <pre><code>&lt;div class="row"&gt;
-  &lt;div class="col-md-6"&gt;
-    &lt;h3&gt;Data Agama (Pie Chart)&lt;/h3&gt;
-    [statistic_chart year="2024" category="agama" type="pie" height="360"]
-  &lt;/div&gt;
-  &lt;div class="col-md-6"&gt;
-    &lt;h3&gt;Data Jenis Kelamin (Bar Chart)&lt;/h3&gt;
-    [statistic_chart year="2024" category="jenis_kelamin" type="bar" height="360"]
-  &lt;/div&gt;
-&lt;/div&gt;
+                <style>
+                    /* Documentation Styling - White and Gray Theme */
+                    .documentation-container {
+                        background: #ffffff;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                        overflow: hidden;
+                        margin: 20px 0;
+                    }
 
-&lt;div class="row mt-4"&gt;
-  &lt;div class="col-12"&gt;
-    &lt;h3&gt;Data RW (Horizontal Bar)&lt;/h3&gt;
-    [statistic_chart year="2024" category="penerima_pemberian_makanan_tambahan" type="horizontalBar" height="360"]
-  &lt;/div&gt;
-&lt;/div&gt;</code></pre>
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                            </div>
-                        </div>
+                    .doc-header {
+                        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                        padding: 30px;
+                        text-align: center;
+                        border-bottom: 1px solid #dee2e6;
+                    }
 
-                        <div class="example-card">
-                            <h3>🔧 Contoh 3: JavaScript untuk API</h3>
-                            <p>Menggunakan JavaScript untuk mengambil data via API:</p>
-                            <div class="code-block large">
-                                <pre><code>// Ambil semua data
-fetch('/wp-json/statistic/v1/data')
-  .then(response => response.json())
-  .then(data => {
-    console.log('Semua data:', data);
-  });
+                    .doc-header h1 {
+                        margin: 0 0 10px 0;
+                        color: #495057;
+                        font-size: 28px;
+                        font-weight: 600;
+                    }
 
-// Ambil data spesifik
-fetch('/wp-json/statistic/v1/data/2024/agama')
-  .then(response => response.json())
-  .then(data => {
-    console.log('Data agama 2024:', data);
-  });</code></pre>
-                                <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
-                            </div>
-                        </div>
+                    .doc-subtitle {
+                        color: #6c757d;
+                        font-size: 16px;
+                        margin: 0;
+                        max-width: 600px;
+                        margin: 0 auto;
+                    }
 
-                        <div class="best-practices">
-                            <h3>💡 Tips & Best Practices</h3>
-                            <div class="tips-grid">
-                                <div class="tip-card tip-blue">
-                                    <h4>🎨 Responsive Design</h4>
-                                    <p>Semua shortcode sudah menggunakan Bootstrap dan responsive</p>
-                                </div>
-                                <div class="tip-card tip-green">
-                                    <h4>⚡ Performance</h4>
-                                    <p>Gunakan parameter filter untuk membatasi data yang ditampilkan</p>
-                                </div>
-                                <div class="tip-card tip-yellow">
-                                    <h4>🔒 Security</h4>
-                                    <p>API hanya menampilkan data yang dipublikasi secara default</p>
-                                </div>
-                                <div class="tip-card tip-purple">
-                                    <h4>🎯 Customization</h4>
-                                    <p>Anda bisa menambahkan CSS custom untuk styling tambahan</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    .doc-tabs {
+                        display: flex;
+                        background: #f8f9fa;
+                        border-bottom: 1px solid #dee2e6;
+                        overflow-x: auto;
+                    }
+
+                    .tab-button {
+                        background: none;
+                        border: none;
+                        padding: 15px 25px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: #6c757d;
+                        border-bottom: 3px solid transparent;
+                        transition: all .3s ease;
+                        white-space: nowrap;
+                    }
+
+                    .tab-button:hover {
+                        background: #e9ecef;
+                        color: #495057;
+                    }
+
+                    .tab-button.active {
+                        color: #495057;
+                        border-bottom-color: #007bff;
+                        background: #ffffff;
+                    }
+
+                    .tab-content {
+                        display: none;
+                        padding: 30px;
+                    }
+
+                    .tab-content.active {
+                        display: block;
+                    }
+
+                    .doc-section {
+                        max-width: 1000px;
+                        margin: 0 auto;
+                    }
+
+                    .section-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 30px;
+                        padding-bottom: 15px;
+                        border-bottom: 2px solid #f8f9fa;
+                    }
+
+                    .section-header h2 {
+                        margin: 0;
+                        color: #495057;
+                        font-size: 24px;
+                        font-weight: 600;
+                    }
+
+                    .badge {
+                        padding: 6px 12px;
+                        border-radius: 20px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: .5px;
+                    }
+
+                    .badge-primary {
+                        background: #007bff;
+                        color: #fff;
+                    }
+
+                    .badge-success {
+                        background: #28a745;
+                        color: #fff;
+                    }
+
+                    .badge-warning {
+                        background: #ffc107;
+                        color: #212529;
+                    }
+
+                    .badge-danger {
+                        background: #dc3545;
+                        color: #fff;
+                    }
+
+                    .badge-info {
+                        background: #17a2b8;
+                        color: #fff;
+                    }
+
+                    .tutorial-steps {
+                        margin-bottom: 40px;
+                    }
+
+                    .step-card {
+                        display: flex;
+                        margin-bottom: 20px;
+                        background: #fff;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+                        overflow: hidden;
+                        border-left: 4px solid;
+                    }
+
+                    .step-blue {
+                        border-left-color: #007bff
+                    }
+
+                    .step-green {
+                        border-left-color: #28a745
+                    }
+
+                    .step-yellow {
+                        border-left-color: #ffc107
+                    }
+
+                    .step-purple {
+                        border-left-color: #6f42c1
+                    }
+
+                    .step-indigo {
+                        border-left-color: #6610f2
+                    }
+
+                    .step-gray {
+                        border-left-color: #6c757d
+                    }
+
+                    .step-red {
+                        border-left-color: #dc3545
+                    }
+
+                    .step-number {
+                        background: #f8f9fa;
+                        width: 60px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: #495057;
+                    }
+
+                    .step-content {
+                        padding: 20px;
+                        flex: 1;
+                    }
+
+                    .step-content h3 {
+                        margin: 0 0 15px 0;
+                        color: #495057;
+                        font-size: 18px;
+                        font-weight: 600;
+                    }
+
+                    .step-content ul {
+                        margin: 0;
+                        padding-left: 20px;
+                    }
+
+                    .step-content li {
+                        margin-bottom: 8px;
+                        color: #6c757d;
+                        line-height: 1.5;
+                    }
+
+                    .category-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                        gap: 10px;
+                        margin-top: 15px;
+                    }
+
+                    .category-item {
+                        background: #f8f9fa;
+                        padding: 10px;
+                        border-radius: 6px;
+                        border: 1px solid #e9ecef;
+                    }
+
+                    .category-item code {
+                        background: #e9ecef;
+                        color: #495057;
+                        padding: 2px 6px;
+                        border-radius: 3px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        display: block;
+                        margin-bottom: 5px;
+                    }
+
+                    .category-item span {
+                        color: #6c757d;
+                        font-size: 13px;
+                    }
+
+                    .category-item.more {
+                        background: #e9ecef;
+                        text-align: center;
+                        font-style: italic;
+                        color: #6c757d;
+                    }
+
+                    .input-types {
+                        margin-top: 15px;
+                    }
+
+                    .input-type-card {
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 6px;
+                        margin-bottom: 15px;
+                        border: 1px solid #e9ecef;
+                    }
+
+                    .input-type-card h4 {
+                        margin: 0 0 10px 0;
+                        color: #495057;
+                        font-size: 16px;
+                    }
+
+                    .input-type-card li {
+                        margin-bottom: 5px;
+                        color: #6c757d;
+                        font-size: 14px;
+                    }
+
+                    .tips-section {
+                        background: #f8f9fa;
+                        padding: 25px;
+                        border-radius: 8px;
+                        margin-bottom: 30px;
+                        border: 1px solid #e9ecef;
+                    }
+
+                    .tips-section h3 {
+                        margin: 0 0 20px 0;
+                        color: #495057;
+                        font-size: 20px;
+                        font-weight: 600;
+                    }
+
+                    .tips-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                        gap: 15px;
+                    }
+
+                    .tip-card {
+                        background: #fff;
+                        padding: 15px;
+                        border-radius: 6px;
+                        border-left: 4px solid;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+                    }
+
+                    .tip-blue {
+                        border-left-color: #007bff
+                    }
+
+                    .tip-green {
+                        border-left-color: #28a745
+                    }
+
+                    .tip-yellow {
+                        border-left-color: #ffc107
+                    }
+
+                    .tip-purple {
+                        border-left-color: #6f42c1
+                    }
+
+                    .tip-card h4 {
+                        margin: 0 0 8px 0;
+                        color: #495057;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+
+                    .tip-card p {
+                        margin: 0;
+                        color: #6c757d;
+                        font-size: 13px;
+                        line-height: 1.4;
+                    }
+
+                    .troubleshooting-section {
+                        background: #fff5f5;
+                        padding: 25px;
+                        border-radius: 8px;
+                        border: 1px solid #fed7d7;
+                    }
+
+                    .troubleshooting-section h3 {
+                        margin: 0 0 20px 0;
+                        color: #c53030;
+                        font-size: 20px;
+                        font-weight: 600;
+                    }
+
+                    .troubleshooting-items {
+                        display: grid;
+                        gap: 15px;
+                    }
+
+                    .trouble-item {
+                        background: #fff;
+                        padding: 15px;
+                        border-radius: 6px;
+                        border-left: 4px solid #dc3545;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+                    }
+
+                    .trouble-item h4 {
+                        margin: 0 0 8px 0;
+                        color: #c53030;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+
+                    .trouble-item p {
+                        margin: 0;
+                        color: #6c757d;
+                        font-size: 13px;
+                        line-height: 1.4;
+                    }
+
+                    .shortcode-card {
+                        background: #fff;
+                        border: 1px solid #e9ecef;
+                        border-radius: 8px;
+                        margin-bottom: 25px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+                    }
+
+                    .shortcode-header {
+                        background: #f8f9fa;
+                        padding: 15px 20px;
+                        border-bottom: 1px solid #e9ecef;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+
+                    .shortcode-header h3 {
+                        margin: 0;
+                        color: #495057;
+                        font-size: 18px;
+                        font-weight: 600;
+                    }
+
+                    .shortcode-card p {
+                        padding: 0 20px;
+                        margin: 15px 0;
+                        color: #6c757d;
+                        line-height: 1.5;
+                    }
+
+                    .code-block {
+                        background: #f8f9fa;
+                        border: 1px solid #e9ecef;
+                        border-radius: 6px;
+                        padding: 15px;
+                        margin: 15px 20px;
+                        position: relative;
+                        font-family: 'Courier New', monospace;
+                    }
+
+                    .code-block.large {
+                        margin: 15px 0;
+                    }
+
+                    .code-block code {
+                        color: #e83e8c;
+                        font-weight: 500;
+                        font-size: 14px;
+                    }
+
+                    .code-block pre {
+                        margin: 0;
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
+                    }
+
+                    .copy-btn {
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
+                        background: #007bff;
+                        color: #fff;
+                        border: none;
+                        padding: 6px 10px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 11px;
+                        font-weight: 500;
+                        transition: background .3s;
+                    }
+
+                    .copy-btn:hover {
+                        background: #0056b3;
+                    }
+
+                    .parameters-table {
+                        padding: 0 20px 20px;
+                    }
+
+                    .parameters-table h4 {
+                        margin: 20px 0 15px 0;
+                        color: #495057;
+                        font-size: 16px;
+                        font-weight: 600;
+                    }
+
+                    .parameters-table table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        border: 1px solid #e9ecef;
+                        border-radius: 6px;
+                        overflow: hidden;
+                    }
+
+                    .parameters-table th {
+                        background: #f8f9fa;
+                        padding: 12px;
+                        text-align: left;
+                        font-weight: 600;
+                        color: #495057;
+                        border-bottom: 1px solid #e9ecef;
+                        font-size: 13px;
+                    }
+
+                    .parameters-table td {
+                        padding: 10px 12px;
+                        border-bottom: 1px solid #f8f9fa;
+                        color: #6c757d;
+                        font-size: 13px;
+                        vertical-align: top;
+                    }
+
+                    .parameters-table code {
+                        background: #f8f9fa;
+                        color: #e83e8c;
+                        padding: 2px 6px;
+                        border-radius: 3px;
+                        font-size: 12px;
+                        font-weight: 500;
+                    }
+
+                    .chart-types {
+                        padding: 0 20px;
+                    }
+
+                    .chart-type {
+                        margin-bottom: 15px;
+                    }
+
+                    .chart-type h5 {
+                        margin: 0 0 8px 0;
+                        color: #495057;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+
+                    .note {
+                        background: #e7f3ff;
+                        border: 1px solid #b3d9ff;
+                        border-radius: 6px;
+                        padding: 15px;
+                        margin: 15px 20px 20px;
+                    }
+
+                    .note p {
+                        margin: 0;
+                        color: #0066cc;
+                        font-size: 14px;
+                    }
+
+                    .warning {
+                        background: #fff3cd;
+                        border: 1px solid #ffeaa7;
+                        border-radius: 6px;
+                        padding: 15px;
+                        margin: 15px 20px 20px;
+                    }
+
+                    .warning p {
+                        margin: 0;
+                        color: #856404;
+                        font-size: 14px;
+                    }
+
+                    .api-endpoints {
+                        margin-bottom: 30px;
+                    }
+
+                    .endpoint-card {
+                        background: #fff;
+                        border: 1px solid #e9ecef;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin-bottom: 20px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+                    }
+
+                    .endpoint-card h3 {
+                        margin: 0 0 15px 0;
+                        color: #495057;
+                        font-size: 18px;
+                        font-weight: 600;
+                    }
+
+                    .endpoint-card h4 {
+                        margin: 15px 0 10px 0;
+                        color: #495057;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+
+                    .endpoint-card ul {
+                        margin: 0;
+                        padding-left: 20px;
+                    }
+
+                    .endpoint-card li {
+                        margin-bottom: 5px;
+                        color: #6c757d;
+                        font-size: 14px;
+                    }
+
+                    .categories-table {
+                        background: #f8f9fa;
+                        padding: 20px;
+                        border-radius: 8px;
+                        border: 1px solid #e9ecef;
+                    }
+
+                    .categories-table h3 {
+                        margin: 0 0 15px 0;
+                        color: #495057;
+                        font-size: 18px;
+                        font-weight: 600;
+                    }
+
+                    .categories-table table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        background: #fff;
+                        border-radius: 6px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+                    }
+
+                    .categories-table th {
+                        background: #495057;
+                        color: #fff;
+                        padding: 12px;
+                        text-align: left;
+                        font-weight: 600;
+                        font-size: 13px;
+                    }
+
+                    .categories-table td {
+                        padding: 10px 12px;
+                        border-bottom: 1px solid #f8f9fa;
+                        color: #6c757d;
+                        font-size: 13px;
+                    }
+
+                    .categories-table code {
+                        background: #f8f9fa;
+                        color: #e83e8c;
+                        padding: 2px 6px;
+                        border-radius: 3px;
+                        font-size: 12px;
+                        font-weight: 500;
+                    }
+
+                    .example-card {
+                        background: #fff;
+                        border: 1px solid #e9ecef;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin-bottom: 25px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+                    }
+
+                    .example-card h3 {
+                        margin: 0 0 10px 0;
+                        color: #495057;
+                        font-size: 18px;
+                        font-weight: 600;
+                    }
+
+                    .example-card p {
+                        margin: 0 0 15px 0;
+                        color: #6c757d;
+                        line-height: 1.5;
+                    }
+
+                    .best-practices {
+                        background: #f8f9fa;
+                        padding: 25px;
+                        border-radius: 8px;
+                        border: 1px solid #e9ecef;
+                        margin-top: 30px;
+                    }
+
+                    .best-practices h3 {
+                        margin: 0 0 20px 0;
+                        color: #495057;
+                        font-size: 20px;
+                        font-weight: 600;
+                    }
+
+                    @media (max-width:768px) {
+                        .doc-header {
+                            padding: 20px
+                        }
+
+                        .doc-header h1 {
+                            font-size: 24px
+                        }
+
+                        .doc-subtitle {
+                            font-size: 14px
+                        }
+
+                        .tab-content {
+                            padding: 20px
+                        }
+
+                        .section-header {
+                            flex-direction: column;
+                            align-items: flex-start;
+                            gap: 10px
+                        }
+
+                        .step-card {
+                            flex-direction: column
+                        }
+
+                        .step-number {
+                            width: 100%;
+                            height: 50px
+                        }
+
+                        .category-grid {
+                            grid-template-columns: 1fr
+                        }
+
+                        .tips-grid {
+                            grid-template-columns: 1fr
+                        }
+
+                        .code-block {
+                            margin: 15px 0;
+                            font-size: 12px
+                        }
+
+                        .copy-btn {
+                            position: static;
+                            margin-top: 10px;
+                            width: 100%
+                        }
+
+                        .parameters-table {
+                            overflow-x: auto
+                        }
+
+                        .categories-table {
+                            overflow-x: auto
+                        }
+                    }
+                </style>
+
+                <script>
+                    // Tab functionality
+                    function showTab(tabName) {
+                        const tabContents = document.querySelectorAll('.tab-content');
+                        tabContents.forEach(content => content.classList.remove('active'));
+                        const tabButtons = document.querySelectorAll('.tab-button');
+                        tabButtons.forEach(button => button.classList.remove('active'));
+                        document.getElementById(tabName + '-tab').classList.add('active');
+                        event.target.classList.add('active');
+                    }
+
+                    // Copy code functionality
+                    function copyCode(button) {
+                        const codeBlock = button.parentNode;
+                        const code = codeBlock.querySelector('code, pre');
+                        const text = code.textContent;
+                        navigator.clipboard.writeText(text).then(function () {
+                            const originalText = button.textContent;
+                            button.textContent = '✅ Copied!';
+                            button.style.background = '#28a745';
+                            setTimeout(() => {
+                                button.textContent = originalText;
+                                button.style.background = '#007bff';
+                            }, 2000);
+                        }).catch(function (err) {
+                            console.error('Could not copy text: ', err);
+                            alert('Kode berhasil disalin ke clipboard');
+                        });
+                    }
+                </script>
             </div>
-
-            <style>
-                /* Documentation Styling - White and Gray Theme */
-                .documentation-container { background: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; margin: 20px 0; }
-                .doc-header { background: linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%); padding: 30px; text-align: center; border-bottom: 1px solid #dee2e6; }
-                .doc-header h1 { margin: 0 0 10px 0; color: #495057; font-size: 28px; font-weight: 600; }
-                .doc-subtitle { color: #6c757d; font-size: 16px; margin: 0; max-width: 600px; margin: 0 auto; }
-                .doc-tabs { display: flex; background: #f8f9fa; border-bottom: 1px solid #dee2e6; overflow-x: auto; }
-                .tab-button { background: none; border: none; padding: 15px 25px; cursor: pointer; font-size: 14px; font-weight: 500; color: #6c757d; border-bottom: 3px solid transparent; transition: all .3s ease; white-space: nowrap; }
-                .tab-button:hover { background: #e9ecef; color: #495057; }
-                .tab-button.active { color: #495057; border-bottom-color: #007bff; background: #ffffff; }
-                .tab-content { display: none; padding: 30px; }
-                .tab-content.active { display: block; }
-                .doc-section { max-width: 1000px; margin: 0 auto; }
-                .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #f8f9fa; }
-                .section-header h2 { margin: 0; color: #495057; font-size: 24px; font-weight: 600; }
-                .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
-                .badge-primary { background: #007bff; color: #fff; }
-                .badge-success { background: #28a745; color: #fff; }
-                .badge-warning { background: #ffc107; color: #212529; }
-                .badge-danger { background: #dc3545; color: #fff; }
-                .badge-info { background: #17a2b8; color: #fff; }
-                .tutorial-steps { margin-bottom: 40px; }
-                .step-card { display: flex; margin-bottom: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.1); overflow: hidden; border-left: 4px solid; }
-                .step-blue{border-left-color:#007bff}.step-green{border-left-color:#28a745}.step-yellow{border-left-color:#ffc107}.step-purple{border-left-color:#6f42c1}.step-indigo{border-left-color:#6610f2}.step-gray{border-left-color:#6c757d}.step-red{border-left-color:#dc3545}
-                .step-number { background: #f8f9fa; width: 60px; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; color:#495057; }
-                .step-content { padding: 20px; flex: 1; }
-                .step-content h3 { margin: 0 0 15px 0; color: #495057; font-size: 18px; font-weight: 600; }
-                .step-content ul { margin: 0; padding-left: 20px; }
-                .step-content li { margin-bottom: 8px; color: #6c757d; line-height: 1.5; }
-                .category-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap: 10px; margin-top: 15px; }
-                .category-item { background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef; }
-                .category-item code { background: #e9ecef; color:#495057; padding:2px 6px; border-radius:3px; font-size:11px; font-weight:600; display:block; margin-bottom:5px; }
-                .category-item span { color:#6c757d; font-size:13px; }
-                .category-item.more { background:#e9ecef; text-align:center; font-style: italic; color:#6c757d; }
-                .input-types{ margin-top:15px; }
-                .input-type-card { background:#f8f9fa; padding:15px; border-radius:6px; margin-bottom:15px; border:1px solid #e9ecef; }
-                .input-type-card h4 { margin:0 0 10px 0; color:#495057; font-size:16px; }
-                .input-type-card li { margin-bottom:5px; color:#6c757d; font-size:14px; }
-                .tips-section { background:#f8f9fa; padding:25px; border-radius:8px; margin-bottom:30px; border:1px solid #e9ecef; }
-                .tips-section h3 { margin:0 0 20px 0; color:#495057; font-size:20px; font-weight:600; }
-                .tips-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap:15px; }
-                .tip-card { background:#fff; padding:15px; border-radius:6px; border-left:4px solid; box-shadow:0 2px 4px rgba(0,0,0,.1); }
-                .tip-blue{border-left-color:#007bff}.tip-green{border-left-color:#28a745}.tip-yellow{border-left-color:#ffc107}.tip-purple{border-left-color:#6f42c1}
-                .tip-card h4 { margin:0 0 8px 0; color:#495057; font-size:14px; font-weight:600; }
-                .tip-card p { margin:0; color:#6c757d; font-size:13px; line-height:1.4; }
-                .troubleshooting-section{ background:#fff5f5; padding:25px; border-radius:8px; border:1px solid #fed7d7; }
-                .troubleshooting-section h3{ margin:0 0 20px 0; color:#c53030; font-size:20px; font-weight:600; }
-                .troubleshooting-items{ display:grid; gap:15px; }
-                .trouble-item{ background:#fff; padding:15px; border-radius:6px; border-left:4px solid #dc3545; box-shadow:0 2px 4px rgba(0,0,0,.1); }
-                .trouble-item h4{ margin:0 0 8px 0; color:#c53030; font-size:14px; font-weight:600; }
-                .trouble-item p{ margin:0; color:#6c757d; font-size:13px; line-height:1.4; }
-                .shortcode-card{ background:#fff; border:1px solid #e9ecef; border-radius:8px; margin-bottom:25px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,.1); }
-                .shortcode-header{ background:#f8f9fa; padding:15px 20px; border-bottom:1px solid #e9ecef; display:flex; justify-content:space-between; align-items:center; }
-                .shortcode-header h3{ margin:0; color:#495057; font-size:18px; font-weight:600; }
-                .shortcode-card p{ padding:0 20px; margin:15px 0; color:#6c757d; line-height:1.5; }
-                .code-block{ background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:15px; margin:15px 20px; position:relative; font-family:'Courier New', monospace; }
-                .code-block.large{ margin:15px 0; }
-                .code-block code{ color:#e83e8c; font-weight:500; font-size:14px; }
-                .code-block pre{ margin:0; white-space:pre-wrap; word-wrap:break-word; }
-                .copy-btn{ position:absolute; top:10px; right:10px; background:#007bff; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:500; transition: background .3s; }
-                .copy-btn:hover{ background:#0056b3; }
-                .parameters-table{ padding:0 20px 20px; }
-                .parameters-table h4{ margin:20px 0 15px 0; color:#495057; font-size:16px; font-weight:600; }
-                .parameters-table table{ width:100%; border-collapse:collapse; border:1px solid #e9ecef; border-radius:6px; overflow:hidden; }
-                .parameters-table th{ background:#f8f9fa; padding:12px; text-align:left; font-weight:600; color:#495057; border-bottom:1px solid #e9ecef; font-size:13px; }
-                .parameters-table td{ padding:10px 12px; border-bottom:1px solid #f8f9fa; color:#6c757d; font-size:13px; vertical-align:top; }
-                .parameters-table code{ background:#f8f9fa; color:#e83e8c; padding:2px 6px; border-radius:3px; font-size:12px; font-weight:500; }
-                .chart-types{ padding:0 20px; }
-                .chart-type{ margin-bottom:15px; }
-                .chart-type h5{ margin:0 0 8px 0; color:#495057; font-size:14px; font-weight:600; }
-                .note{ background:#e7f3ff; border:1px solid #b3d9ff; border-radius:6px; padding:15px; margin:15px 20px 20px; }
-                .note p{ margin:0; color:#0066cc; font-size:14px; }
-                .warning{ background:#fff3cd; border:1px solid #ffeaa7; border-radius:6px; padding:15px; margin:15px 20px 20px; }
-                .warning p{ margin:0; color:#856404; font-size:14px; }
-                .api-endpoints{ margin-bottom:30px; }
-                .endpoint-card{ background:#fff; border:1px solid #e9ecef; border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 2px 4px rgba(0,0,0,.1); }
-                .endpoint-card h3{ margin:0 0 15px 0; color:#495057; font-size:18px; font-weight:600; }
-                .endpoint-card h4{ margin:15px 0 10px 0; color:#495057; font-size:14px; font-weight:600; }
-                .endpoint-card ul{ margin:0; padding-left:20px; }
-                .endpoint-card li{ margin-bottom:5px; color:#6c757d; font-size:14px; }
-                .categories-table{ background:#f8f9fa; padding:20px; border-radius:8px; border:1px solid #e9ecef; }
-                .categories-table h3{ margin:0 0 15px 0; color:#495057; font-size:18px; font-weight:600; }
-                .categories-table table{ width:100%; border-collapse:collapse; background:#fff; border-radius:6px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,.1); }
-                .categories-table th{ background:#495057; color:#fff; padding:12px; text-align:left; font-weight:600; font-size:13px; }
-                .categories-table td{ padding:10px 12px; border-bottom:1px solid #f8f9fa; color:#6c757d; font-size:13px; }
-                .categories-table code{ background:#f8f9fa; color:#e83e8c; padding:2px 6px; border-radius:3px; font-size:12px; font-weight:500; }
-                .example-card{ background:#fff; border:1px solid #e9ecef; border-radius:8px; padding:20px; margin-bottom:25px; box-shadow:0 2px 4px rgba(0,0,0,.1); }
-                .example-card h3{ margin:0 0 10px 0; color:#495057; font-size:18px; font-weight:600; }
-                .example-card p{ margin:0 0 15px 0; color:#6c757d; line-height:1.5; }
-                .best-practices{ background:#f8f9fa; padding:25px; border-radius:8px; border:1px solid #e9ecef; margin-top:30px; }
-                .best-practices h3{ margin:0 0 20px 0; color:#495057; font-size:20px; font-weight:600; }
-                @media (max-width:768px){ .doc-header{padding:20px} .doc-header h1{font-size:24px} .doc-subtitle{font-size:14px} .tab-content{padding:20px} .section-header{flex-direction:column; align-items:flex-start; gap:10px} .step-card{flex-direction:column} .step-number{width:100%; height:50px} .category-grid{grid-template-columns:1fr} .tips-grid{grid-template-columns:1fr} .code-block{margin:15px 0; font-size:12px} .copy-btn{position:static; margin-top:10px; width:100%} .parameters-table{overflow-x:auto} .categories-table{overflow-x:auto} }
-            </style>
-
-            <script>
-                // Tab functionality
-                function showTab(tabName) {
-                    const tabContents = document.querySelectorAll('.tab-content');
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    const tabButtons = document.querySelectorAll('.tab-button');
-                    tabButtons.forEach(button => button.classList.remove('active'));
-                    document.getElementById(tabName + '-tab').classList.add('active');
-                    event.target.classList.add('active');
-                }
-
-                // Copy code functionality
-                function copyCode(button) {
-                    const codeBlock = button.parentNode;
-                    const code = codeBlock.querySelector('code, pre');
-                    const text = code.textContent;
-                    navigator.clipboard.writeText(text).then(function () {
-                        const originalText = button.textContent;
-                        button.textContent = '✅ Copied!';
-                        button.style.background = '#28a745';
-                        setTimeout(() => {
-                            button.textContent = originalText;
-                            button.style.background = '#007bff';
-                        }, 2000);
-                    }).catch(function (err) {
-                        console.error('Could not copy text: ', err);
-                        alert('Kode berhasil disalin ke clipboard');
-                    });
-                }
-            </script>
-        </div>
-        <?php
+            <?php
     }
 
     /**
