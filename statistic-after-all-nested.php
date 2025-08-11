@@ -2277,7 +2277,6 @@ class StatisticPlugin
             </style>
 
             <div class="category-management-container">
-                 Header 
                 <div class="category-header">
                     <h1>🏷️ Kelola Kategori & Field</h1>
                     <p class="description">Tambah, edit, dan kelola kategori statistik beserta field-fieldnya. Kategori yang
@@ -2377,6 +2376,12 @@ class StatisticPlugin
                                                 📝 Fields
                                             </button>
                                         <?php endif; ?>
+                                        <?php if ($category->category_type === 'nested_gender'): ?>
+                                            <button class="btn-small btn-fields"
+                                                onclick="manageFields('<?php echo esc_attr($category->category_code); ?>', '<?php echo esc_attr($category->category_name); ?>')">
+                                                📝 Fields
+                                            </button>
+                                        <?php endif; ?>
                                         <button class="btn-small btn-delete"
                                             onclick="deleteCategory('<?php echo esc_attr($category->category_code); ?>', '<?php echo esc_attr($category->category_name); ?>')">
                                             🗑️ Hapus
@@ -2455,7 +2460,6 @@ class StatisticPlugin
                 </div>
             </div>
 
-             Fields Management Modal 
             <div id="fields-modal" class="modal-overlay">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -2496,7 +2500,6 @@ class StatisticPlugin
                 </div>
             </div>
 
-             Field Edit Modal 
             <div id="field-edit-modal" class="modal-overlay">
                 <div class="modal-content" style="max-width: 400px;">
                     <div class="modal-header">
@@ -4734,14 +4737,12 @@ class StatisticPlugin
             </style>
 
             <div class="dashboard-container">
-                 Header 
                 <div class="dashboard-header">
                     <h1>📊 Dashboard Statistik Desa/Kelurahan</h1>
                     <p class="dashboard-subtitle">Kelola dan pantau data statistik desa/kelurahan dengan mudah</p>
                     <span class="dashboard-version">v<?php echo $this->version; ?></span>
                 </div>
 
-                 Statistics Cards 
                 <div class="stats-grid">
                     <div class="stat-card total">
                         <div class="stat-icon">📈</div>
@@ -5129,49 +5130,53 @@ class StatisticPlugin
                 }
 
                 .data-table th {
-                    background: #f8f9fa;
-                    padding: 15px 20px;
-                    text-align: left;
+                    background: #f6f7f7;
+                    color: #32373c;
                     font-weight: 600;
-                    color: #495057;
-                    border-bottom: 2px solid #dee2e6;
                     font-size: 13px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
+                    padding: 12px 15px;
+                    text-align: left;
+                    border-bottom: 1px solid #e1e5e9;
+                    white-space: nowrap;
                 }
 
                 .data-table td {
-                    padding: 15px 20px;
-                    border-bottom: 1px solid #f8f9fa;
-                    vertical-align: middle;
+                    padding: 12px 15px;
+                    border-bottom: 1px solid #f0f0f1;
+                    vertical-align: top;
+                    font-size: 13px;
+                    line-height: 1.4;
                 }
 
                 .data-table tbody tr:hover {
-                    background: #f8f9fa;
+                    background: #f6f7f7;
                 }
 
                 .category-name {
                     font-weight: 600;
-                    color: #2c3e50;
+                    color: #32373c;
                     margin-bottom: 3px;
                 }
 
                 .category-code {
-                    font-family: monospace;
                     font-size: 11px;
-                    color: #6c757d;
-                    background: #f8f9fa;
+                    color: #646970;
+                    font-family: monospace;
+                    background: #f0f0f1;
                     padding: 2px 6px;
                     border-radius: 3px;
                 }
 
                 .year-badge {
-                    background: #e9ecef;
-                    color: #495057;
+                    display: inline-block;
+                    background: #2271b1;
+                    color: white;
                     padding: 4px 8px;
                     border-radius: 12px;
-                    font-size: 12px;
+                    font-size: 11px;
                     font-weight: 600;
+                    min-width: 45px;
+                    text-align: center;
                 }
 
                 .status-badge {
@@ -5183,13 +5188,13 @@ class StatisticPlugin
                 }
 
                 .status-published {
-                    background: #d4edda;
-                    color: #155724;
+                    background: #d1e7dd;
+                    color: #0a3622;
                 }
 
                 .status-draft {
-                    background: #fff3cd;
-                    color: #856404;
+                    background: #f8d7da;
+                    color: #58151c;
                 }
 
                 .data-preview {
@@ -5360,13 +5365,11 @@ class StatisticPlugin
             </style>
 
             <div class="list-container">
-                 Header 
                 <div class="list-header">
                     <h1>📋 Daftar Data Statistik</h1>
                     <p class="description">Kelola semua data statistik desa/kelurahan yang telah diinput</p>
                 </div>
 
-                 Filters 
                 <div class="filters-section">
                     <form method="get" action="">
                         <input type="hidden" name="page" value="statistic-list">
@@ -5418,7 +5421,6 @@ class StatisticPlugin
                     </form>
                 </div>
 
-                 Results 
                 <div class="results-section">
                     <div class="results-header">
                         <div class="results-info">
@@ -5506,7 +5508,6 @@ class StatisticPlugin
                             </tbody>
                         </table>
 
-                         Pagination 
                         <?php if ($total_pages > 1): ?>
                             <div class="pagination-wrapper">
                                 <div class="pagination-info">
@@ -5932,13 +5933,11 @@ class StatisticPlugin
             </style>
 
             <div class="docs-container">
-                 Header 
                 <div class="docs-header">
                     <h1>📖 Dokumentasi Plugin Statistik Desa/Kelurahan</h1>
                     <p class="docs-subtitle">Panduan lengkap penggunaan shortcode, API, dan fitur-fitur plugin</p>
                 </div>
 
-                 Navigation 
                 <div class="docs-nav">
                     <ul class="nav-tabs">
                         <li class="nav-tab">
