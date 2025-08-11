@@ -5735,8 +5735,8 @@ class StatisticPlugin
                             if (response.success) {
                                 row.fadeOut(400, function () {
                                     row.remove();
-                                    // Redirect to Statistik Desa page after successful delete
-                                    window.location.href = '<?php echo admin_url('admin.php?page=statistic'); ?>';
+                                    // Reload current page to reflect changes
+                                    location.reload();
                                 });
                             } else {
                                 alert('❌ Gagal menghapus data: ' + response.data);
