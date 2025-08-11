@@ -2371,7 +2371,7 @@ class StatisticPlugin
                                             onclick="editCategory(<?php echo esc_attr(json_encode($category)); ?>)">
                                             ✏️ Edit
                                         </button>
-                                        <?php if ($category->category_type === 'regular' || $category->category_type === 'nested_gender'): ?>
+                                        <?php if ($category->category_type === 'regular'): ?>
                                             <button class="btn-small btn-fields"
                                                 onclick="manageFields('<?php echo esc_attr($category->category_code); ?>', '<?php echo esc_attr($category->category_name); ?>')">
                                                 📝 Fields
@@ -4961,38 +4961,38 @@ class StatisticPlugin
         ?>
         <div class="wrap">
             <style>
-                /* Modern Admin Table Styling - Matching statistic-before.php */
-                .statistics-admin-container {
-                    background: #fff;
+                /* List Page Styling */
+                .list-container {
                     margin: 20px 0;
+                }
+
+                .list-header {
+                    background: white;
+                    padding: 25px;
                     border-radius: 8px;
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    margin-bottom: 20px;
+                    border-left: 4px solid #007bff;
                 }
 
-                .statistics-header {
-                    padding: 20px 25px;
-                    border-bottom: 1px solid #e1e5e9;
-                    background: #f8f9fa;
-                    border-radius: 8px 8px 0 0;
-                }
-
-                .statistics-header h1 {
+                .list-header h1 {
                     margin: 0 0 10px 0;
-                    color: #32373c;
+                    color: #2c3e50;
                     font-size: 24px;
                     font-weight: 600;
                 }
 
-                .statistics-header .description {
-                    color: #646970;
+                .list-header .description {
+                    color: #6c757d;
                     margin: 0;
                     font-size: 14px;
                 }
 
-                .statistics-filters {
-                    padding: 20px 25px;
-                    background: #fafafa;
-                    border-bottom: 1px solid #e1e5e9;
+                .filters-section {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
                     margin-bottom: 20px;
                 }
 
@@ -5010,38 +5010,36 @@ class StatisticPlugin
                 }
 
                 .filter-label {
-                    font-size: 12px;
-                    color: #646970;
+                    font-size: 13px;
                     font-weight: 500;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
+                    color: #495057;
                 }
 
                 .filter-input,
                 .filter-select {
-                    padding: 6px 12px;
-                    border: 1px solid #dcdcde;
+                    padding: 8px 12px;
+                    border: 1px solid #ced4da;
                     border-radius: 4px;
-                    font-size: 13px;
+                    font-size: 14px;
                     background: white;
                 }
 
                 .filter-input:focus,
                 .filter-select:focus {
                     outline: none;
-                    border-color: #007cba;
-                    box-shadow: 0 0 0 1px #007cba;
+                    border-color: #007bff;
+                    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
                 }
 
                 .btn-filter {
-                    background: #007cba;
+                    background: #007bff;
                     color: white;
-                    border: 1px solid #007cba;
-                    padding: 6px 16px;
-                    border-radius: 3px;
+                    border: 1px solid #007bff;
+                    padding: 8px 16px;
+                    border-radius: 4px;
                     cursor: pointer;
-                    font-size: 13px;
-                    font-weight: 400;
+                    font-size: 14px;
+                    font-weight: 500;
                     text-decoration: none;
                     display: inline-flex;
                     align-items: center;
@@ -5050,21 +5048,21 @@ class StatisticPlugin
                 }
 
                 .btn-filter:hover {
-                    background: #005a87;
-                    border-color: #005a87;
+                    background: #0056b3;
+                    border-color: #0056b3;
                     color: white;
                     text-decoration: none;
                 }
 
                 .btn-clear {
-                    background: #646970;
+                    background: #6c757d;
                     color: white;
-                    border: 1px solid #646970;
-                    padding: 6px 16px;
-                    border-radius: 3px;
+                    border: 1px solid #6c757d;
+                    padding: 8px 16px;
+                    border-radius: 4px;
                     cursor: pointer;
-                    font-size: 13px;
-                    font-weight: 400;
+                    font-size: 14px;
+                    font-weight: 500;
                     text-decoration: none;
                     display: inline-flex;
                     align-items: center;
@@ -5074,8 +5072,8 @@ class StatisticPlugin
                 }
 
                 .btn-clear:hover {
-                    background: #50575e;
-                    border-color: #50575e;
+                    background: #545b62;
+                    border-color: #545b62;
                     color: white;
                     text-decoration: none;
                 }
@@ -5361,15 +5359,15 @@ class StatisticPlugin
                 }
             </style>
 
-            <div class="statistics-admin-container">
-                <!-- Header -->
-                <div class="statistics-header">
+            <div class="list-container">
+                 Header 
+                <div class="list-header">
                     <h1>📋 Daftar Data Statistik</h1>
                     <p class="description">Kelola semua data statistik desa/kelurahan yang telah diinput</p>
                 </div>
 
-                <!-- Filters -->
-                <div class="statistics-filters">
+                 Filters 
+                <div class="filters-section">
                     <form method="get" action="">
                         <input type="hidden" name="page" value="statistic-list">
                         <div class="filters-grid">
@@ -6433,20 +6431,15 @@ fetch('<?php echo home_url('/wp-json/statistic/v1/data/2024/agama'); ?>')
                                 <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
                                 <pre>/* Custom styling untuk statistic display */
 .statistic-display .card {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 20px;
-    background: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
 }
 
 .statistic-display .card-header {
-    background: transparent;
-    border: none;
-    padding: 0 0 15px 0;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #f0f0f0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
 }
 
 .nested-gender-display .gender-card {
@@ -6541,75 +6534,25 @@ fetch('<?php echo home_url('/wp-json/statistic/v1/data/2024/agama'); ?>')
             '5.1.3'
         );
 
-        // Enqueue custom CSS - Clean style matching statistic-before.php
+        // Enqueue custom CSS
         wp_add_inline_style('statistic-bootstrap', '
-            .statistic-display {
-                display: flex;
-                flex-direction: column;
-                gap: 30px;
-                margin-top: 20px;
-            }
-            
             .statistic-display .card {
-                border: 1px solid #ddd;
-                border-radius: 10px;
-                padding: 20px;
-                background: #fff;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
                 margin-bottom: 20px;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
             
             .statistic-display .card-header {
-                background: transparent;
-                border: none;
-                padding: 0 0 15px 0;
-                margin-bottom: 15px;
-                border-bottom: 2px solid #f0f0f0;
-            }
-            
-            .statistic-display .card-header h4 {
-                margin: 0;
-                font-size: 1.25rem;
+                background-color: #f8f9fa;
+                border-bottom: 1px solid #dee2e6;
                 font-weight: 600;
-                color: #333;
-            }
-            
-            .statistic-display .card-body {
-                padding: 0;
             }
             
             .statistic-display .display-6 {
                 font-size: 1.5rem;
                 font-weight: 600;
                 color: #495057;
-            }
-            
-            .card-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-                gap: 15px;
-            }
-            
-            .card-item {
-                background: #f8f8f8;
-                padding: 10px;
-                border-radius: 8px;
-                text-align: center;
-            }
-            
-            .card-item-title {
-                font-weight: bold;
-            }
-            
-            .card-item-value {
-                font-size: 20px;
-                margin-top: 5px;
-            }
-            
-            .stat-source {
-                margin-top: 10px;
-                font-size: 0.9em;
-                color: #777;
             }
             
             .alert {
