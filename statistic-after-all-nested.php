@@ -840,10 +840,28 @@ class StatisticPlugin
                 }
             }
         }
-
+        
         return $structure;
     }
 
+    /**
+     * Split nested gender key into main key and gender part
+     * Example: islam_laki_laki -> ['main_key' => 'islam', 'gender' => 'laki_laki']
+     */
+    private function split_nested_gender_key($key)
+    {
+        if (preg_match('/^(.*)_(laki_laki|perempuan)$/', $key, $matches)) {
+            return array('main_key' => $matches[1], 'gender' => $matches[2]);
+        }
+        // Fallback handling if key was split incorrectly elsewhere
+        $parts = explode('_', $key);
+        if (count($parts) >= 3 && $parts[count($parts)-2] === 'laki' && $parts[count($parts)-1] === 'laki') {
+            $main_key = implode('_', array_slice($parts, 0, -2));
+            return array('main_key' => $main_key, 'gender' => 'laki_laki');
+        }
+        return array('main_key' => $key, 'gender' => null);
+    }
+    
     /**
      * Generate nested gender fields for form
      * Generate field form untuk kategori nested gender
@@ -1042,15 +1060,12 @@ class StatisticPlugin
         // Hitung total per sub-kategori (laki + perempuan) dan tampilkan box sederhana
         $totals_by_main = array();
         foreach ($data as $key => $value) {
-            $parts = explode('_', $key);
-            if (count($parts) >= 2) {
-                array_pop($parts); // hapus gender
-                $main_key = implode('_', $parts);
-                if (!isset($totals_by_main[$main_key])) {
-                    $totals_by_main[$main_key] = 0;
-                }
-                $totals_by_main[$main_key] += intval($value);
+            $parsed = $this->split_nested_gender_key($key);
+            $main_key = $parsed['main_key'];
+            if (!isset($totals_by_main[$main_key])) {
+                $totals_by_main[$main_key] = 0;
             }
+            $totals_by_main[$main_key] += intval($value);
         }
 
         echo '<div class="simple-total-grid">';
@@ -3548,11 +3563,11 @@ class StatisticPlugin
                     $sum_total = 0;
                     $grouped_data = array();
                     foreach ($data as $key => $value) {
-                        $parts = explode('_', $key);
-                        if (count($parts) >= 2) {
-                            $gender = array_pop($parts);
-                            $main_key = implode('_', $parts);
-                            if (!isset($grouped_data[$main_key])) { $grouped_data[$main_key] = array('laki_laki' => 0, 'perempuan' => 0); }
+                        $parsed = $this->split_nested_gender_key($key);
+                        $main_key = $parsed['main_key'];
+                        $gender = $parsed['gender'];
+                        if (!isset($grouped_data[$main_key])) { $grouped_data[$main_key] = array('laki_laki' => 0, 'perempuan' => 0); }
+                        if ($gender === 'laki_laki' || $gender === 'perempuan') {
                             $grouped_data[$main_key][$gender] = intval($value);
                         }
                     }
