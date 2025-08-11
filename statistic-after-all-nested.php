@@ -1039,179 +1039,39 @@ class StatisticPlugin
             return;
         }
 
-        echo '<div class="nested-gender-display">';
-
-        // Group data by main category
-        $grouped_data = array();
+        // Hitung total per sub-kategori (laki + perempuan) dan tampilkan box sederhana
+        $totals_by_main = array();
         foreach ($data as $key => $value) {
-            // Extract main category and gender from key (e.g., "islam_laki_laki" -> "islam", "laki_laki")
             $parts = explode('_', $key);
             if (count($parts) >= 2) {
-                $gender = array_pop($parts); // Get last part (laki_laki or perempuan)
-                $main_key = implode('_', $parts); // Get remaining parts
-
-                if (!isset($grouped_data[$main_key])) {
-                    $grouped_data[$main_key] = array();
+                array_pop($parts); // hapus gender
+                $main_key = implode('_', $parts);
+                if (!isset($totals_by_main[$main_key])) {
+                    $totals_by_main[$main_key] = 0;
                 }
-                $grouped_data[$main_key][$gender] = $value;
+                $totals_by_main[$main_key] += intval($value);
             }
         }
 
+        echo '<div class="simple-total-grid">';
         foreach ($nested_structure[$category] as $main_key => $gender_labels) {
-            if (!isset($grouped_data[$main_key]))
-                continue;
-
             $main_name = explode(' - ', reset($gender_labels))[0];
-            $laki_laki = $grouped_data[$main_key]['laki_laki'] ?? 0;
-            $perempuan = $grouped_data[$main_key]['perempuan'] ?? 0;
-            $total = $laki_laki + $perempuan;
+            $total_value = isset($totals_by_main[$main_key]) ? intval($totals_by_main[$main_key]) : 0;
 
-            echo '<div class="nested-item-display mb-3">';
-            echo '<div class="nested-header">';
-            echo '<h6 class="mb-2">' . esc_html($main_name) . '</h6>';
-            echo '</div>';
-            echo '<div class="nested-content">';
-            echo '<div class="row">';
-
-            // Male column
-            echo '<div class="col-md-4">';
-            echo '<div class="gender-card male">';
-            echo '<div class="gender-icon">👨</div>';
-            echo '<div class="gender-label">Laki-laki</div>';
-            echo '<div class="gender-value">' . number_format($laki_laki) . '</div>';
-            if ($total > 0) {
-                $male_percentage = round(($laki_laki / $total) * 100, 1);
-                echo '<div class="gender-percentage">' . $male_percentage . '%</div>';
-            }
-            echo '</div>';
-            echo '</div>';
-
-            // Female column
-            echo '<div class="col-md-4">';
-            echo '<div class="gender-card female">';
-            echo '<div class="gender-icon">👩</div>';
-            echo '<div class="gender-label">Perempuan</div>';
-            echo '<div class="gender-value">' . number_format($perempuan) . '</div>';
-            if ($total > 0) {
-                $female_percentage = round(($perempuan / $total) * 100, 1);
-                echo '<div class="gender-percentage">' . $female_percentage . '%</div>';
-            }
-            echo '</div>';
-            echo '</div>';
-
-            // Total column
-            echo '<div class="col-md-4">';
-            echo '<div class="gender-card total">';
-            echo '<div class="gender-icon">👥</div>';
-            echo '<div class="gender-label">Total</div>';
-            echo '<div class="gender-value">' . number_format($total) . '</div>';
-            echo '<div class="gender-percentage">100%</div>';
-            echo '</div>';
-            echo '</div>';
-
-            echo '</div>';
-            echo '</div>';
+            echo '<div class="simple-total-box">';
+            echo '<div class="box-title">' . esc_html($main_name) . '</div>';
+            echo '<div class="box-value">' . number_format($total_value) . '</div>';
             echo '</div>';
         }
-
         echo '</div>';
 
-        // Add CSS for nested gender display
+        // CSS ringkas untuk box kotak
         echo '<style>
-            .nested-gender-display {
-                background: #f8f9fa;
-                border-radius: 8px;
-                padding: 20px;
-            }
-            
-            .nested-item-display {
-                background: white;
-                border-radius: 6px;
-                padding: 15px;
-                border: 1px solid #e9ecef;
-            }
-            
-            .nested-header h6 {
-                color: #495057;
-                font-weight: 600;
-                margin: 0;
-                padding-bottom: 10px;
-                border-bottom: 2px solid #e9ecef;
-            }
-            
-            .nested-content {
-                margin-top: 15px;
-            }
-            
-            .gender-card {
-                background: #f8f9fa;
-                border-radius: 6px;
-                padding: 15px;
-                text-align: center;
-                border: 2px solid transparent;
-                transition: all 0.3s ease;
-            }
-            
-            .gender-card.male {
-                border-color: #007bff;
-                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            }
-            
-            .gender-card.female {
-                border-color: #e91e63;
-                background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
-            }
-            
-            .gender-card.total {
-                border-color: #28a745;
-                background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-            }
-            
-            .gender-icon {
-                font-size: 24px;
-                margin-bottom: 8px;
-            }
-            
-            .gender-label {
-                font-size: 12px;
-                font-weight: 600;
-                color: #6c757d;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-bottom: 5px;
-            }
-            
-            .gender-value {
-                font-size: 20px;
-                font-weight: 700;
-                color: #2c3e50;
-                margin-bottom: 3px;
-            }
-            
-            .gender-percentage {
-                font-size: 11px;
-                color: #6c757d;
-                font-weight: 500;
-            }
-            
-            @media (max-width: 768px) {
-                .nested-content .row {
-                    margin: 0 -5px;
-                }
-                
-                .nested-content .col-md-4 {
-                    padding: 0 5px;
-                    margin-bottom: 10px;
-                }
-                
-                .gender-card {
-                    padding: 10px;
-                }
-                
-                .gender-value {
-                    font-size: 16px;
-                }
-            }
+            .simple-total-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+            .simple-total-box { border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; padding: 12px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+            .simple-total-box .box-title { font-size: 12px; color: #6b7280; margin-bottom: 6px; line-height: 1.2; min-height: 28px; }
+            .simple-total-box .box-value { font-size: 20px; font-weight: 700; color: #111827; }
+            @media (max-width: 576px) { .simple-total-grid { gap: 10px; } .simple-total-box { padding: 10px; } .simple-total-box .box-value { font-size: 18px; } }
         </style>';
     }
 
@@ -3533,53 +3393,52 @@ class StatisticPlugin
             $category_name = $this->get_categories()[$row->category] ?? $row->category;
             $data = json_decode($row->data, true);
 
-            echo '<div class="card mb-4">';
-            echo '<div class="card-header">';
-            echo '<h4 class="mb-0">' . esc_html($category_name);
-            if ($atts['show_year'] === 'true') {
-                echo ' - ' . esc_html($row->year);
-            }
-            echo '</h4>';
-            echo '</div>';
+            echo '<div class="card mb-3">';
             echo '<div class="card-body">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-2">';
+            echo '<h5 class="mb-0">' . esc_html($category_name);
+            if ($atts['show_year'] === 'true') { echo '<small class="text-muted ms-2">' . esc_html($row->year) . '</small>'; }
+            echo '</h5>';
+            echo '</div>';
 
             // Check category type and display accordingly
             if ($this->is_nested_gender_category($row->category)) {
-                // Display nested gender data with comparison
+                // Display simplified total-only grid for nested categories
                 $this->render_nested_gender_display($row->category, $data);
             } elseif ($this->is_dynamic_rw_category($row->category)) {
-                // Display RW data
-                echo '<div class="row">';
+                // Display RW data as compact boxes
+                echo '<div class="simple-total-grid">';
                 foreach ($data as $key => $value) {
                     if (strpos($key, 'rw_') === 0) {
                         $rw_number = str_replace('rw_', '', $key);
-                        echo '<div class="col-md-3 mb-2">';
-                        echo '<div class="card text-center">';
-                        echo '<div class="card-body">';
-                        echo '<h5 class="card-title">RW ' . esc_html($rw_number) . '</h5>';
-                        echo '<p class="card-text display-6">' . esc_html($value) . '</p>';
-                        echo '</div>';
-                        echo '</div>';
+                        echo '<div class="simple-total-box">';
+                        echo '<div class="box-title">RW ' . esc_html($rw_number) . '</div>';
+                        echo '<div class="box-value">' . number_format(intval($value)) . '</div>';
                         echo '</div>';
                     }
                 }
                 echo '</div>';
             } else {
-                // Display regular category data
-                echo '<div class="row">';
+                // Display regular category data as compact boxes
+                echo '<div class="simple-total-grid">';
                 foreach ($data as $key => $value) {
                     $field_label = $this->get_category_fields()[$row->category][$key] ?? $key;
-                    echo '<div class="col-md-4 mb-2">';
-                    echo '<div class="card text-center">';
-                    echo '<div class="card-body">';
-                    echo '<h6 class="card-title">' . esc_html($field_label) . '</h6>';
-                    echo '<p class="card-text display-6">' . esc_html($value) . '</p>';
-                    echo '</div>';
-                    echo '</div>';
+                    echo '<div class="simple-total-box">';
+                    echo '<div class="box-title">' . esc_html($field_label) . '</div>';
+                    echo '<div class="box-value">' . number_format(intval($value)) . '</div>';
                     echo '</div>';
                 }
                 echo '</div>';
             }
+
+            // CSS util untuk grid kotak sederhana
+            echo '<style>
+                .simple-total-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+                .simple-total-box { border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; padding: 12px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+                .simple-total-box .box-title { font-size: 12px; color: #6b7280; margin-bottom: 6px; line-height: 1.2; min-height: 28px; }
+                .simple-total-box .box-value { font-size: 20px; font-weight: 700; color: #111827; }
+                @media (max-width: 576px) { .simple-total-grid { gap: 10px; } .simple-total-box { padding: 10px; } .simple-total-box .box-value { font-size: 18px; } }
+            </style>';
 
             // Tampilkan sumber jika diminta
             if ($atts['show_source'] === 'true' && !empty($row->sumber)) {
@@ -3658,10 +3517,25 @@ class StatisticPlugin
             echo '<div class="table-responsive">';
             echo '<table class="table table-striped table-bordered">';
             echo '<thead class="table-light">';
-            echo '<tr>';
-            echo '<th style="background-color: #f8f9fa; font-weight: 600;">Kategori</th>';
-            echo '<th style="background-color: #f8f9fa; font-weight: 600;">Jumlah</th>';
-            echo '</tr>';
+            if ($this->is_nested_gender_category($row->category)) {
+                echo '<tr>';
+                echo '<th rowspan="2" style="vertical-align: middle; text-align:center; width:46px;">#</th>';
+                echo '<th rowspan="2" style="vertical-align: middle;">Kelompok</th>';
+                echo '<th colspan="2" style="text-align:center;">Jumlah</th>';
+                echo '<th colspan="2" style="text-align:center;">Laki-Laki</th>';
+                echo '<th colspan="2" style="text-align:center;">Perempuan</th>';
+                echo '</tr>';
+                echo '<tr>';
+                echo '<th style="text-align:center;">Sub Total</th><th style="text-align:center;">%</th>';
+                echo '<th style="text-align:center;">Sub Total</th><th style="text-align:center;">%</th>';
+                echo '<th style="text-align:center;">Sub Total</th><th style="text-align:center;">%</th>';
+                echo '</tr>';
+            } else {
+                echo '<tr>';
+                echo '<th style="background-color: #f8f9fa; font-weight: 600;">Kategori</th>';
+                echo '<th style="background-color: #f8f9fa; font-weight: 600;">Jumlah</th>';
+                echo '</tr>';
+            }
             echo '</thead>';
             echo '<tbody>';
 
@@ -3670,43 +3544,65 @@ class StatisticPlugin
                 // For nested gender categories, show gender comparison data
                 $nested_structure = $this->get_nested_gender_structure();
                 if (isset($nested_structure[$row->category])) {
-                    // Group data by main category
+                    // Hitung total keseluruhan untuk persentase
+                    $sum_total = 0;
                     $grouped_data = array();
                     foreach ($data as $key => $value) {
                         $parts = explode('_', $key);
                         if (count($parts) >= 2) {
                             $gender = array_pop($parts);
                             $main_key = implode('_', $parts);
-
-                            if (!isset($grouped_data[$main_key])) {
-                                $grouped_data[$main_key] = array();
-                            }
-                            $grouped_data[$main_key][$gender] = $value;
+                            if (!isset($grouped_data[$main_key])) { $grouped_data[$main_key] = array('laki_laki' => 0, 'perempuan' => 0); }
+                            $grouped_data[$main_key][$gender] = intval($value);
                         }
                     }
+                    $sum_male_total = 0; $sum_female_total = 0;
+                    foreach ($grouped_data as $g) { $sum_total += ($g['laki_laki'] + $g['perempuan']); $sum_male_total += $g['laki_laki']; $sum_female_total += $g['perempuan']; }
 
+                    $row_no = 1;
                     foreach ($nested_structure[$row->category] as $main_key => $gender_labels) {
-                        if (!isset($grouped_data[$main_key]))
-                            continue;
+                        if (!isset($grouped_data[$main_key])) continue;
 
                         $main_name = explode(' - ', reset($gender_labels))[0];
                         $laki_laki = $grouped_data[$main_key]['laki_laki'] ?? 0;
                         $perempuan = $grouped_data[$main_key]['perempuan'] ?? 0;
                         $total = $laki_laki + $perempuan;
+                        $pct_total = $sum_total > 0 ? round(($total / $sum_total) * 100, 2) : 0;
+                        $pct_male = $sum_total > 0 ? round(($laki_laki / $sum_total) * 100, 2) : 0;
+                        $pct_female = $sum_total > 0 ? round(($perempuan / $sum_total) * 100, 2) : 0;
 
                         echo '<tr>';
-                        echo '<td>' . esc_html($main_name) . ' - Laki-laki</td>';
-                        echo '<td>' . esc_html($laki_laki) . '</td>';
-                        echo '</tr>';
-                        echo '<tr>';
-                        echo '<td>' . esc_html($main_name) . ' - Perempuan</td>';
-                        echo '<td>' . esc_html($perempuan) . '</td>';
-                        echo '</tr>';
-                        echo '<tr style="background-color: #f8f9fa; font-weight: bold;">';
-                        echo '<td>' . esc_html($main_name) . ' - Total</td>';
-                        echo '<td>' . esc_html($total) . '</td>';
+                        echo '<td style="text-align:center;">' . $row_no++ . '</td>';
+                        echo '<td>' . esc_html($main_name) . '</td>';
+                        echo '<td style="text-align:right;">' . esc_html($total) . '</td>';
+                        echo '<td style="text-align:right;">' . esc_html(number_format($pct_total, 2)) . '%</td>';
+                        echo '<td style="text-align:right;">' . esc_html($laki_laki) . '</td>';
+                        echo '<td style="text-align:right;">' . esc_html(number_format($pct_male, 2)) . '%</td>';
+                        echo '<td style="text-align:right;">' . esc_html($perempuan) . '</td>';
+                        echo '<td style="text-align:right;">' . esc_html(number_format($pct_female, 2)) . '%</td>';
                         echo '</tr>';
                     }
+
+                    // Baris total ringkas
+                    echo '<tr style="font-weight:bold; background:#fff8e1;">';
+                    echo '<td colspan="2" style="text-align:right;">JUMLAH</td>';
+                    echo '<td style="text-align:right;">' . esc_html($sum_total) . '</td>';
+                    echo '<td style="text-align:right;">100.00%</td>';
+                    echo '<td style="text-align:right;">' . esc_html($sum_male_total) . '</td>';
+                    echo '<td style="text-align:right;">' . ($sum_total>0 ? esc_html(number_format(($sum_male_total/$sum_total)*100,2)) : '0.00') . '%</td>';
+                    echo '<td style="text-align:right;">' . esc_html($sum_female_total) . '</td>';
+                    echo '<td style="text-align:right;">' . ($sum_total>0 ? esc_html(number_format(($sum_female_total/$sum_total)*100,2)) : '0.00') . '%</td>';
+                    echo '</tr>';
+
+                    echo '<tr style="font-weight:bold; background:#f1f3f5;">';
+                    echo '<td colspan="2" style="text-align:right;">TOTAL</td>';
+                    echo '<td style="text-align:right;">' . esc_html($sum_total) . '</td>';
+                    echo '<td style="text-align:right;">100.00%</td>';
+                    echo '<td style="text-align:right;">' . esc_html($sum_male_total) . '</td>';
+                    echo '<td style="text-align:right;">' . ($sum_total>0 ? esc_html(number_format(($sum_male_total/$sum_total)*100,2)) : '0.00') . '%</td>';
+                    echo '<td style="text-align:right;">' . esc_html($sum_female_total) . '</td>';
+                    echo '<td style="text-align:right;">' . ($sum_total>0 ? esc_html(number_format(($sum_female_total/$sum_total)*100,2)) : '0.00') . '%</td>';
+                    echo '</tr>';
                 }
             } elseif ($this->is_dynamic_rw_category($row->category)) {
                 // For RW categories, show RW data
@@ -3777,6 +3673,13 @@ class StatisticPlugin
                 font-size: 14px;
                 vertical-align: middle;
             }
+            .statistic-table-wrapper .table thead th { text-align: center; }
+            .statistic-table-wrapper .table td:nth-child(3),
+            .statistic-table-wrapper .table td:nth-child(4),
+            .statistic-table-wrapper .table td:nth-child(5),
+            .statistic-table-wrapper .table td:nth-child(6),
+            .statistic-table-wrapper .table td:nth-child(7),
+            .statistic-table-wrapper .table td:nth-child(8) { text-align: right; }
             
             .statistic-table-wrapper .table tbody tr:nth-child(even) {
                 background-color: #f8f9fa;
@@ -3856,33 +3759,41 @@ class StatisticPlugin
         // Prepare data for Chart.js
         $labels = array();
         $values = array();
+        $datasets = array();
 
         if ($this->is_nested_gender_category($result->category)) {
-            // For nested gender categories, aggregate by main category
+            // Build grouped datasets for Laki-laki and Perempuan
             $nested_structure = $this->get_nested_gender_structure();
+            $male_values = array();
+            $female_values = array();
             if (isset($nested_structure[$result->category])) {
-                $grouped_data = array();
-                foreach ($data as $key => $value) {
-                    $parts = explode('_', $key);
-                    if (count($parts) >= 2) {
-                        $gender = array_pop($parts);
-                        $main_key = implode('_', $parts);
-
-                        if (!isset($grouped_data[$main_key])) {
-                            $grouped_data[$main_key] = 0;
-                        }
-                        $grouped_data[$main_key] += intval($value);
-                    }
-                }
-
                 foreach ($nested_structure[$result->category] as $main_key => $gender_labels) {
-                    if (isset($grouped_data[$main_key])) {
-                        $main_name = explode(' - ', reset($gender_labels))[0];
-                        $labels[] = $main_name;
-                        $values[] = $grouped_data[$main_key];
-                    }
+                    $main_name = explode(' - ', reset($gender_labels))[0];
+                    $labels[] = $main_name;
+                    $male_key = $main_key . '_laki_laki';
+                    $female_key = $main_key . '_perempuan';
+                    $male_values[] = isset($data[$male_key]) ? intval($data[$male_key]) : 0;
+                    $female_values[] = isset($data[$female_key]) ? intval($data[$female_key]) : 0;
                 }
             }
+            $datasets[] = array(
+                'label' => 'Laki-laki',
+                'data' => $male_values,
+                'backgroundColor' => 'rgba(52, 152, 219, 0.8)',
+                'borderColor' => 'rgba(52, 152, 219, 1)',
+                'borderWidth' => 2,
+                'borderRadius' => 4,
+                'borderSkipped' => false,
+            );
+            $datasets[] = array(
+                'label' => 'Perempuan',
+                'data' => $female_values,
+                'backgroundColor' => 'rgba(88, 83, 201, 0.8)',
+                'borderColor' => 'rgba(88, 83, 201, 1)',
+                'borderWidth' => 2,
+                'borderRadius' => 4,
+                'borderSkipped' => false,
+            );
         } elseif ($this->is_dynamic_rw_category($result->category)) {
             foreach ($data as $key => $value) {
                 if (strpos($key, 'rw_') === 0) {
@@ -3899,31 +3810,31 @@ class StatisticPlugin
             }
         }
 
-        // Warna yang sesuai dengan gambar - biru muda dan ungu
+        // Warna default untuk dataset tunggal (kategori non-nested)
         $background_colors = array(
-            'rgba(52, 152, 219, 0.8)',  // Biru muda (background)
-            'rgba(88, 83, 201, 1)',     // Ungu (background)
-            'rgba(46, 204, 113, 0.8)',  // Hijau (background)
-            'rgba(241, 196, 15, 0.8)',  // Kuning (background)
-            'rgba(231, 76, 60, 0.8)',   // Merah (background)
-            'rgba(230, 126, 34, 0.8)',  // Orange (background)
-            'rgba(155, 89, 182, 0.8)',  // Ungu muda (background)
-            'rgba(52, 73, 94, 0.8)',    // Abu-abu gelap (background)
-            'rgba(26, 188, 156, 0.8)',  // Tosca (background)
-            'rgba(243, 156, 18, 0.8)'   // Orange gelap (background)
+            'rgba(52, 152, 219, 0.8)',
+            'rgba(88, 83, 201, 1)',
+            'rgba(46, 204, 113, 0.8)',
+            'rgba(241, 196, 15, 0.8)',
+            'rgba(231, 76, 60, 0.8)',
+            'rgba(230, 126, 34, 0.8)',
+            'rgba(155, 89, 182, 0.8)',
+            'rgba(52, 73, 94, 0.8)',
+            'rgba(26, 188, 156, 0.8)',
+            'rgba(243, 156, 18, 0.8)'
         );
 
         $border_colors = array(
-            'rgba(52, 152, 219, 1)',    // Biru muda (border)
-            'rgba(88, 83, 201, 1)',     // Ungu (border)
-            'rgba(46, 204, 113, 1)',    // Hijau (border)
-            'rgba(241, 196, 15, 1)',    // Kuning (border)
-            'rgba(231, 76, 60, 1)',     // Merah (border)
-            'rgba(230, 126, 34, 1)',    // Orange (border)
-            'rgba(155, 89, 182, 1)',    // Ungu muda (border)
-            'rgba(52, 73, 94, 1)',      // Abu-abu gelap (border)
-            'rgba(26, 188, 156, 1)',    // Tosca (border)
-            'rgba(243, 156, 18, 1)'     // Orange gelap (border)
+            'rgba(52, 152, 219, 1)',
+            'rgba(88, 83, 201, 1)',
+            'rgba(46, 204, 113, 1)',
+            'rgba(241, 196, 15, 1)',
+            'rgba(231, 76, 60, 1)',
+            'rgba(230, 126, 34, 1)',
+            'rgba(155, 89, 182, 1)',
+            'rgba(52, 73, 94, 1)',
+            'rgba(26, 188, 156, 1)',
+            'rgba(243, 156, 18, 1)'
         );
 
         ?>
@@ -3936,15 +3847,15 @@ class StatisticPlugin
                     type: chartType,
                     data: {
                         labels: <?php echo json_encode($labels); ?>,
-                        datasets: [{
-                            label: '<?php echo esc_js($category_name); ?>',
-                            data: <?php echo json_encode($values); ?>,
-                            backgroundColor: <?php echo json_encode($background_colors); ?>,
-                            borderColor: <?php echo json_encode($border_colors); ?>,
-                            borderWidth: 2,
-                            borderRadius: 4,
-                            borderSkipped: false,
-                        }]
+                        datasets: <?php echo !empty($datasets) ? json_encode($datasets) : json_encode([[
+                            'label' => esc_js($category_name),
+                            'data' => $values,
+                            'backgroundColor' => $background_colors,
+                            'borderColor' => $border_colors,
+                            'borderWidth' => 2,
+                            'borderRadius' => 4,
+                            'borderSkipped' => false,
+                        ]]); ?>
                     },
                     options: {
                         responsive: true,
@@ -3961,11 +3872,10 @@ class StatisticPlugin
                             },
                             legend: {
                                 display: true,
+                                position: 'top',
                                 labels: {
                                     color: '#2c3e50',
-                                    font: {
-                                        size: 12
-                                    }
+                                    font: { size: 12 }
                                 }
                             }
                         },
