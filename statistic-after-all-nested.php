@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Statistik Desa/Kelurahan (Enhanced with Nested Gender Categories) - COMPLETE
+Plugin Name: Statistik Desa/Kelurahan (NEW)
 Description: Plugin untuk menyimpan dan menampilkan data statistik desa/kelurahan dengan form dinamis dan struktur nested untuk perbandingan gender.
 Version: 2.1.1
 Author: Kemas Kaisar x Aslamul Fikri
@@ -342,9 +342,6 @@ class StatisticPlugin
 
         // Daftarkan menu admin
         add_action('admin_menu', array($this, 'add_admin_menu'));
-
-        // Enqueue CSS dan JS untuk frontend
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
 
         // Enqueue CSS dan JS untuk admin
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
@@ -7037,52 +7034,15 @@ class StatisticPlugin
     public function enqueue_frontend_scripts()
     {
         // Enqueue Bootstrap CSS untuk styling yang lebih baik
-        wp_enqueue_style(
-            'statistic-bootstrap',
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css',
-            array(),
-            '5.1.3'
-        );
+        wp_enqueue_style('chartjs', 'https://cdn.jsdelivr.net/npm/chart.js', array(), null, true);
 
         // Enqueue custom CSS
-        wp_add_inline_style('statistic-bootstrap', '
-            .statistic-display .card {
-                margin-bottom: 20px;
-                border: 1px solid #dee2e6;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            
-            .statistic-display .card-header {
-                background-color: #f8f9fa;
-                border-bottom: 1px solid #dee2e6;
-                font-weight: 600;
-            }
-            
-            .statistic-display .display-6 {
-                font-size: 1.5rem;
-                font-weight: 600;
-                color: #495057;
-            }
-            
-            .alert {
-                padding: 15px;
-                margin-bottom: 20px;
-                border: 1px solid transparent;
-                border-radius: 4px;
-            }
-            
-            .alert-info {
-                color: #0c5460;
-                background-color: #d1ecf1;
-                border-color: #bee5eb;
-            }
-            
-            .alert-warning {
-                color: #856404;
-                background-color: #fff3cd;
-                border-color: #ffeaa7;
-            }
+        wp_add_inline_style('bootstrap', '
+            .statistic-display .card { margin-bottom: 1rem; }
+            .statistic-display .card-header { background-color: #f8f9fa; }
+            .statistic-display .display-6 { font-size: 1.25rem; font-weight: 600; }
+            .table-responsive { margin-top: 1rem; }
+            .badge { margin-right: 0.25rem; margin-bottom: 0.25rem; }
         ');
 
         // Enqueue AJAX script
