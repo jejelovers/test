@@ -824,14 +824,21 @@ class StatisticPlugin
                     $cat->category_code
                 ));
 
-                // If DB has fields for this category, override the default structure with DB-defined fields
+                // Merge DB-defined fields with default structure instead of overriding
                 if ($fields && count($fields) > 0) {
-                    $structure[$cat->category_code] = array();
+                    $db_defined = array();
                     foreach ($fields as $field) {
-                        $structure[$cat->category_code][$field->field_code] = array(
+                        $db_defined[$field->field_code] = array(
                             'laki_laki' => $field->field_name . ' - Laki-laki',
                             'perempuan' => $field->field_name . ' - Perempuan',
                         );
+                    }
+
+                    if (isset($structure[$cat->category_code]) && is_array($structure[$cat->category_code])) {
+                        // Keep defaults and add/override with DB-defined fields
+                        $structure[$cat->category_code] = array_merge($structure[$cat->category_code], $db_defined);
+                    } else {
+                        $structure[$cat->category_code] = $db_defined;
                     }
                 } else {
                     // If no DB fields and category not in default, keep it empty so UI can show a helpful message
@@ -3233,6 +3240,42 @@ class StatisticPlugin
             "SELECT * FROM {$this->fields_table} WHERE category_code = %s ORDER BY field_order ASC",
             $category
         ));
+
+        // Auto-seed default fields for nested gender categories when empty
+        if ($category_info->category_type === 'nested_gender' && (!is_array($fields) || count($fields) === 0)) {
+            $structure = $this->get_nested_gender_structure();
+            if (isset($structure[$category]) && is_array($structure[$category]) && count($structure[$category]) > 0) {
+                $order = 1;
+                foreach ($structure[$category] as $main_key => $gender_map) {
+                    // Derive main label (before the " - ") from any gender label
+                    $any_label = reset($gender_map);
+                    $main_label_parts = explode(' - ', (string) $any_label);
+                    $main_label = $main_label_parts[0];
+
+                    $wpdb->insert(
+                        $this->fields_table,
+                        array(
+                            'category_code' => $category,
+                            'field_code' => $main_key,
+                            'field_name' => $main_label,
+                            'field_type' => 'number',
+                            'field_order' => $order,
+                            'is_required' => 1,
+                            'created_at' => current_time('mysql'),
+                            'updated_at' => current_time('mysql')
+                        ),
+                        array('%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s')
+                    );
+                    $order++;
+                }
+
+                // Reload fields after seeding
+                $fields = $wpdb->get_results($wpdb->prepare(
+                    "SELECT * FROM {$this->fields_table} WHERE category_code = %s ORDER BY field_order ASC",
+                    $category
+                ));
+            }
+        }
 
         // Generate HTML for form fields
         $html = $this->generate_category_fields_html($category, $category_info, array());
