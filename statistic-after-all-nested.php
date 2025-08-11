@@ -841,7 +841,7 @@ class StatisticPlugin
                 }
             }
         }
-        
+
         return $structure;
     }
 
@@ -856,13 +856,13 @@ class StatisticPlugin
         }
         // Fallback handling if key was split incorrectly elsewhere
         $parts = explode('_', $key);
-        if (count($parts) >= 3 && $parts[count($parts)-2] === 'laki' && $parts[count($parts)-1] === 'laki') {
+        if (count($parts) >= 3 && $parts[count($parts) - 2] === 'laki' && $parts[count($parts) - 1] === 'laki') {
             $main_key = implode('_', array_slice($parts, 0, -2));
             return array('main_key' => $main_key, 'gender' => 'laki_laki');
         }
         return array('main_key' => $key, 'gender' => null);
     }
-    
+
     /**
      * Generate nested gender fields for form
      * Generate field form untuk kategori nested gender
@@ -1184,6 +1184,93 @@ class StatisticPlugin
                 'wni' => 'Warga Negara Indonesia (WNI)',
                 'wna' => 'Warga Negara Asing (WNA)',
                 'dwi_kewarganegaraan' => 'Dwi Kewarganegaraan'
+            ),
+            'apbd_pelaksanaan' => array(
+                'bidang_penyelenggaraan_pemerintahan_desa' => 'Bidang Penyelenggaraan Pemerintahan Desa',
+                'bidang_pelaksanaan_pembangunan_desa' => 'Bidang Pelaksanaan Pembangunan Desa',
+                'bidang_pembinaan_kemasyarakatan' => 'Bidang Pembinaan Kemasyarakatan',
+                'bidang_pemberdayaan_masyarakat' => 'Bidang Pemberdayaan Masyarakat',
+                'bidang_penanggulangan_bencana_darurat_dan_mendesak' => 'Bidang Penanggulangan Bencana, Darurat dan Mendesak'
+            ),
+            'apbd_pembelanjaan' => array(
+                'belanja_pegawai' => 'Belanja Pegawai',
+                'belanja_barang_dan_jasa' => 'Belanja Barang dan Jasa',
+                'belanja_modal' => 'Belanja Modal'
+            ),
+            'apbd_pendapatan' => array(
+                'pendapatan_asli_desa' => 'Pendapatan Asli Desa',
+                'dana_transfer' => 'Dana Transfer',
+                'pendapatan_lain_lain' => 'Pendapatan Lain-lain'
+            ),
+            'jumlah_guru_ngaji_berdasarkan_lokasi_belajar' => array(
+                'masjid' => 'Masjid',
+                'mushola' => 'Mushola',
+                'rumah_guru' => 'Rumah Guru',
+                'rumah_warga' => 'Rumah Warga',
+                'madrasah' => 'Madrasah'
+            ),
+            'jumlah_murid_berdasarkan_satuan_pendidikan_dan_jenis_kelamin' => array(
+                'paud_laki_laki' => 'PAUD Laki-laki',
+                'paud_perempuan' => 'PAUD Perempuan',
+                'tk_laki_laki' => 'TK Laki-laki',
+                'tk_perempuan' => 'TK Perempuan',
+                'sd_laki_laki' => 'SD Laki-laki',
+                'sd_perempuan' => 'SD Perempuan',
+                'smp_laki_laki' => 'SMP Laki-laki',
+                'smp_perempuan' => 'SMP Perempuan',
+                'sma_laki_laki' => 'SMA Laki-laki',
+                'sma_perempuan' => 'SMA Perempuan'
+            ),
+            'jumlah_penerima_bpnt_pkh_dan_pbi_apbd' => array(
+                'penerima_bpnt' => 'Penerima BPNT',
+                'penerima_pkh' => 'Penerima PKH',
+                'penerima_pbi_apbd' => 'Penerima PBI APBD'
+            ),
+            'jumlah_penerima_rutilahu' => array(
+                'rehab_ringan' => 'Rehabilitasi Ringan',
+                'rehab_sedang' => 'Rehabilitasi Sedang',
+                'rehab_berat' => 'Rehab Berat',
+                'bedah_rumah' => 'Bedah Rumah'
+            ),
+            'jumlah_umkm_berdasarkan_jenis_media_pemasaran' => array(
+                'media_sosial' => 'Media Sosial',
+                'marketplace' => 'Marketplace',
+                'website_sendiri' => 'Website Sendiri',
+                'brosur_leaflet' => 'Brosur/Leaflet',
+                'mulut_ke_mulut' => 'Mulut ke Mulut',
+                'tidak_ada_promosi' => 'Tidak Ada Promosi'
+            ),
+            'jumlah_umkm_berdasarkan_jenis_usaha' => array(
+                'kuliner' => 'Kuliner',
+                'fashion' => 'Fashion',
+                'kerajinan' => 'Kerajinan',
+                'pertanian' => 'Pertanian',
+                'peternakan' => 'Peternakan',
+                'perdagangan' => 'Perdagangan',
+                'jasa' => 'Jasa',
+                'teknologi' => 'Teknologi'
+            ),
+            'jumlah_umkm_berdasarkan_perizinan_dan_verifikasi' => array(
+                'memiliki_nib' => 'Memiliki NIB',
+                'memiliki_siup' => 'Memiliki SIUP',
+                'memiliki_tdp' => 'Memiliki TDP',
+                'memiliki_npwp' => 'Memiliki NPWP',
+                'belum_memiliki_izin' => 'Belum Memiliki Izin'
+            ),
+            'penerima_bantuan_keluarga' => array(
+                'pkh' => 'Program Keluarga Harapan (PKH)',
+                'bpnt' => 'Bantuan Pangan Non Tunai (BPNT)',
+                'bst' => 'Bantuan Sosial Tunai (BST)',
+                'pip' => 'Program Indonesia Pintar (PIP)',
+                'kip' => 'Kartu Indonesia Pintar (KIP)',
+                'bantuan_desa' => 'Bantuan Desa'
+            ),
+            'penerima_bantuan_penduduk' => array(
+                'lansia' => 'Bantuan Lansia',
+                'disabilitas' => 'Bantuan Disabilitas',
+                'anak_yatim' => 'Bantuan Anak Yatim',
+                'janda' => 'Bantuan Janda',
+                'fakir_miskin' => 'Bantuan Fakir Miskin'
             ),
             // Add other regular categories here...
         );
@@ -2151,6 +2238,7 @@ class StatisticPlugin
                     color: #fff;
                     text-decoration: none;
                 }
+
                 .no-fields {
                     padding: 20px;
                     text-align: center;
@@ -2201,7 +2289,8 @@ class StatisticPlugin
                     <button class="btn-add-category" onclick="openCategoryModal()">
                         ➕ Tambah Kategori Baru
                     </button>
-                    <button class="btn-delete" onclick="dropCategoriesTable()" title="Hapus tabel kategori (statistic_categories)">
+                    <button class="btn-delete" onclick="dropCategoriesTable()"
+                        title="Hapus tabel kategori (statistic_categories)">
                         🗑️ Hapus Tabel Kategori
                     </button>
                 </div>
@@ -3477,7 +3566,9 @@ class StatisticPlugin
             echo '<div class="card-body">';
             echo '<div class="d-flex justify-content-between align-items-center mb-2">';
             echo '<h5 class="mb-0">' . esc_html($category_name);
-            if ($atts['show_year'] === 'true') { echo '<small class="text-muted ms-2">' . esc_html($row->year) . '</small>'; }
+            if ($atts['show_year'] === 'true') {
+                echo '<small class="text-muted ms-2">' . esc_html($row->year) . '</small>';
+            }
             echo '</h5>';
             echo '</div>';
 
@@ -3631,17 +3722,25 @@ class StatisticPlugin
                         $parsed = $this->split_nested_gender_key($key);
                         $main_key = $parsed['main_key'];
                         $gender = $parsed['gender'];
-                        if (!isset($grouped_data[$main_key])) { $grouped_data[$main_key] = array('laki_laki' => 0, 'perempuan' => 0); }
+                        if (!isset($grouped_data[$main_key])) {
+                            $grouped_data[$main_key] = array('laki_laki' => 0, 'perempuan' => 0);
+                        }
                         if ($gender === 'laki_laki' || $gender === 'perempuan') {
                             $grouped_data[$main_key][$gender] = intval($value);
                         }
                     }
-                    $sum_male_total = 0; $sum_female_total = 0;
-                    foreach ($grouped_data as $g) { $sum_total += ($g['laki_laki'] + $g['perempuan']); $sum_male_total += $g['laki_laki']; $sum_female_total += $g['perempuan']; }
+                    $sum_male_total = 0;
+                    $sum_female_total = 0;
+                    foreach ($grouped_data as $g) {
+                        $sum_total += ($g['laki_laki'] + $g['perempuan']);
+                        $sum_male_total += $g['laki_laki'];
+                        $sum_female_total += $g['perempuan'];
+                    }
 
                     $row_no = 1;
                     foreach ($nested_structure[$row->category] as $main_key => $gender_labels) {
-                        if (!isset($grouped_data[$main_key])) continue;
+                        if (!isset($grouped_data[$main_key]))
+                            continue;
 
                         $main_name = explode(' - ', reset($gender_labels))[0];
                         $laki_laki = $grouped_data[$main_key]['laki_laki'] ?? 0;
@@ -3669,9 +3768,9 @@ class StatisticPlugin
                     echo '<td style="text-align:right;">' . esc_html($sum_total) . '</td>';
                     echo '<td style="text-align:right;">100.00%</td>';
                     echo '<td style="text-align:right;">' . esc_html($sum_male_total) . '</td>';
-                    echo '<td style="text-align:right;">' . ($sum_total>0 ? esc_html(number_format(($sum_male_total/$sum_total)*100,2)) : '0.00') . '%</td>';
+                    echo '<td style="text-align:right;">' . ($sum_total > 0 ? esc_html(number_format(($sum_male_total / $sum_total) * 100, 2)) : '0.00') . '%</td>';
                     echo '<td style="text-align:right;">' . esc_html($sum_female_total) . '</td>';
-                    echo '<td style="text-align:right;">' . ($sum_total>0 ? esc_html(number_format(($sum_female_total/$sum_total)*100,2)) : '0.00') . '%</td>';
+                    echo '<td style="text-align:right;">' . ($sum_total > 0 ? esc_html(number_format(($sum_female_total / $sum_total) * 100, 2)) : '0.00') . '%</td>';
                     echo '</tr>';
 
                     echo '<tr style="font-weight:bold; background:#f1f3f5;">';
@@ -3679,9 +3778,9 @@ class StatisticPlugin
                     echo '<td style="text-align:right;">' . esc_html($sum_total) . '</td>';
                     echo '<td style="text-align:right;">100.00%</td>';
                     echo '<td style="text-align:right;">' . esc_html($sum_male_total) . '</td>';
-                    echo '<td style="text-align:right;">' . ($sum_total>0 ? esc_html(number_format(($sum_male_total/$sum_total)*100,2)) : '0.00') . '%</td>';
+                    echo '<td style="text-align:right;">' . ($sum_total > 0 ? esc_html(number_format(($sum_male_total / $sum_total) * 100, 2)) : '0.00') . '%</td>';
                     echo '<td style="text-align:right;">' . esc_html($sum_female_total) . '</td>';
-                    echo '<td style="text-align:right;">' . ($sum_total>0 ? esc_html(number_format(($sum_female_total/$sum_total)*100,2)) : '0.00') . '%</td>';
+                    echo '<td style="text-align:right;">' . ($sum_total > 0 ? esc_html(number_format(($sum_female_total / $sum_total) * 100, 2)) : '0.00') . '%</td>';
                     echo '</tr>';
                 }
             } elseif ($this->is_dynamic_rw_category($row->category)) {
@@ -3927,15 +4026,17 @@ class StatisticPlugin
                     type: chartType,
                     data: {
                         labels: <?php echo json_encode($labels); ?>,
-                        datasets: <?php echo !empty($datasets) ? json_encode($datasets) : json_encode([[
-                            'label' => esc_js($category_name),
-                            'data' => $values,
-                            'backgroundColor' => $background_colors,
-                            'borderColor' => $border_colors,
-                            'borderWidth' => 2,
-                            'borderRadius' => 4,
-                            'borderSkipped' => false,
-                        ]]); ?>
+                        datasets: <?php echo !empty($datasets) ? json_encode($datasets) : json_encode([
+                            [
+                                'label' => esc_js($category_name),
+                                'data' => $values,
+                                'backgroundColor' => $background_colors,
+                                'borderColor' => $border_colors,
+                                'borderWidth' => 2,
+                                'borderRadius' => 4,
+                                'borderSkipped' => false,
+                            ]
+                        ]); ?>
                     },
                     options: {
                         responsive: true,
@@ -5957,7 +6058,8 @@ class StatisticPlugin
                                         <li>Klik tombol <strong>Tambah Kategori Baru</strong> untuk membuat kategori baru</li>
                                         <li>Pilih tipe kategori sesuai kebutuhan: <strong>Regular</strong> (field tetap),
                                             <strong>Dynamic RW</strong> (field RW dinamis), atau <strong>Nested Gender</strong>
-                                            (perbandingan gender)</li>
+                                            (perbandingan gender)
+                                        </li>
                                         <li>Untuk kategori Regular dan Nested Gender, klik tombol <strong>Fields</strong> untuk
                                             mengelola field yang tersedia</li>
                                         <li>Pastikan menggunakan <strong>kode kategori</strong> yang unik dengan huruf kecil dan
@@ -6845,6 +6947,7 @@ class StatisticPlugin
                         font-size: 18px;
                         font-weight: 600;
                     }
+
                     .categories-table table {
                         width: 100%;
                         border-collapse: collapse;
