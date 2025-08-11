@@ -2318,7 +2318,7 @@ class StatisticPlugin
                         dibuat di sini akan tersedia di form input statistik.</p>
                 </div>
 
-                 Actions 
+                                   <!-- Actions -->
                 <div class="category-actions">
                     <div class="summary">
                         <span>📊 Total Kategori: <strong><?php echo count($categories); ?></strong></span>
@@ -2504,7 +2504,7 @@ class StatisticPlugin
                     <div class="modal-body">
                         <input type="hidden" id="fields-category-code">
 
-                         Add New Field Form 
+                         <!-- Add New Field Form -->
                         <div class="form-group">
                             <label class="form-label">Tambah Field Baru:</label>
                             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -2518,14 +2518,14 @@ class StatisticPlugin
                                 field: bebas.</small>
                         </div>
 
-                         Fields List 
+                         <!-- Fields List -->
                         <div class="fields-container">
                             <div class="fields-header">
                                 <h4>📝 Daftar Fields</h4>
                                 <span id="fields-count">0 fields</span>
                             </div>
                             <div class="fields-list-container" id="fields-list">
-                                 Fields will be loaded here 
+                                 <!-- Fields will be loaded here -->
                             </div>
                         </div>
                     </div>
@@ -4228,7 +4228,7 @@ class StatisticPlugin
                             <input type="hidden" name="original_category" value="<?php echo esc_attr($edit_data->category); ?>">
                         <?php endif; ?>
 
-                         Tahun Field 
+                                                   <!-- Tahun Field -->
                         <div class="form-group">
                             <label for="year" class="form-label">Tahun:</label>
                             <select name="year" id="year" required class="form-select" <?php echo $is_edit ? 'disabled' : ''; ?>>
@@ -4243,7 +4243,7 @@ class StatisticPlugin
                             <?php endif; ?>
                         </div>
 
-                         Kategori Field 
+                                                   <!-- Kategori Field -->
                         <div class="form-group">
                             <label for="category" class="form-label">Kategori:</label>
                             <select name="category" id="category" required class="form-select" <?php echo $is_edit ? 'disabled' : ''; ?>>
@@ -4259,7 +4259,7 @@ class StatisticPlugin
                             <?php endif; ?>
                         </div>
 
-                         Sumber Data Field 
+                                                   <!-- Sumber Data Field -->
                         <div class="form-group">
                             <label for="sumber" class="form-label">Sumber Data:</label>
                             <input type="text" id="sumber" name="sumber" class="form-control" placeholder="Masukkan sumber data"
@@ -4270,7 +4270,7 @@ class StatisticPlugin
                             <?php echo $this->generate_category_fields($is_edit ? $edit_data->category : '', $is_edit ? $edit_data : null); ?>
                         </div>
 
-                         Tampilkan di Publik Checkbox 
+                                                   <!-- Tampilkan di Publik Checkbox -->
                         <div class="checkbox-group">
                             <input type="checkbox" name="is_published" value="1" <?php echo ($is_edit ? ($edit_data->is_published ? 'checked' : '') : 'checked'); ?> class="form-check-input"
                                 id="is_published">
@@ -5057,7 +5057,11 @@ class StatisticPlugin
                     border: 1px solid #ced4da;
                     border-radius: 4px;
                     font-size: 14px;
-                    background: white;
+                    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+                    width: 100%;
+                    min-width: 160px;
+                    height: 36px;
+                    box-sizing: border-box;
                 }
 
                 .filter-input:focus,
@@ -5657,12 +5661,13 @@ class StatisticPlugin
                 }
 
                 .docs-header {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    padding: 30px;
-                    border-radius: 12px;
-                    margin-bottom: 30px;
-                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    background: #f8f9fa;
+                    color: #222;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                    border: 1px solid #e1e5e9;
+                    box-shadow: none;
                 }
 
                 .docs-header h1 {
@@ -5997,7 +6002,7 @@ class StatisticPlugin
                         </li>
                     </ul>
 
-                     Shortcodes Tab 
+                     <!-- Shortcodes Tab -->
                     <div id="shortcodes" class="tab-content active">
                         <div class="section">
                             <h2>🔗 Shortcodes</h2>
@@ -6172,7 +6177,7 @@ class StatisticPlugin
                         </div>
                     </div>
 
-                     API Tab 
+                     <!-- API Tab -->
                     <div id="api" class="tab-content">
                         <div class="section">
                             <h2>🌐 REST API Endpoints</h2>
@@ -6287,7 +6292,7 @@ fetch('<?php echo home_url('/wp-json/statistic/v1/data/2024/agama'); ?>')
                         </div>
                     </div>
 
-                     Features Tab 
+                     <!-- Features Tab -->
                     <div id="features" class="tab-content">
                         <div class="section">
                             <h2>⚡ Fitur-Fitur Plugin</h2>
@@ -6365,7 +6370,7 @@ fetch('<?php echo home_url('/wp-json/statistic/v1/data/2024/agama'); ?>')
                         </div>
                     </div>
 
-                     Examples Tab 
+                     <!-- Examples Tab -->
                     <div id="examples" class="tab-content">
                         <div class="section">
                             <h2>💡 Contoh Penggunaan</h2>
