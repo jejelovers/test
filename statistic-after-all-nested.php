@@ -563,7 +563,8 @@ class StatisticPlugin
      */
     private function get_nested_gender_structure()
     {
-        return array(
+        // Built-in default structure
+        $structure = array(
             'agama' => array(
                 'islam' => array(
                     'laki_laki' => 'Islam - Laki-laki',
@@ -813,6 +814,37 @@ class StatisticPlugin
                 )
             )
         );
+
+        // Extend with DB-defined nested categories dynamically
+        global $wpdb;
+        $db_nested_categories = $wpdb->get_results("SELECT category_code FROM {$this->categories_table} WHERE category_type = 'nested_gender' AND is_active = 1");
+
+        if ($db_nested_categories) {
+            foreach ($db_nested_categories as $cat) {
+                if (!isset($structure[$cat->category_code])) {
+                    $fields = $wpdb->get_results($wpdb->prepare(
+                        "SELECT field_code, field_name FROM {$this->fields_table} WHERE category_code = %s ORDER BY field_order ASC",
+                        $cat->category_code
+                    ));
+
+                    // If fields exist, create male/female sub-structure for each
+                    if ($fields) {
+                        $structure[$cat->category_code] = array();
+                        foreach ($fields as $field) {
+                            $structure[$cat->category_code][$field->field_code] = array(
+                                'laki_laki' => $field->field_name . ' - Laki-laki',
+                                'perempuan' => $field->field_name . ' - Perempuan',
+                            );
+                        }
+                    } else {
+                        // Keep empty category to allow UI to display a proper message
+                        $structure[$cat->category_code] = array();
+                    }
+                }
+            }
+        }
+
+        return $structure;
     }
 
     /**
@@ -825,6 +857,9 @@ class StatisticPlugin
         
         if (!isset($nested_structure[$category])) {
             return '<p>Struktur nested gender tidak ditemukan untuk kategori ini.</p>';
+        }
+        if (empty($nested_structure[$category])) {
+            return '<p>Belum ada field pada kategori ini. Tambahkan field melalui tombol Fields.</p>';
         }
 
         $html = '<div class="nested-gender-container">';
