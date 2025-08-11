@@ -819,23 +819,23 @@ class StatisticPlugin
 
         if ($db_nested_categories) {
             foreach ($db_nested_categories as $cat) {
-                if (!isset($structure[$cat->category_code])) {
-                    $fields = $wpdb->get_results($wpdb->prepare(
-                        "SELECT field_code, field_name FROM {$this->fields_table} WHERE category_code = %s ORDER BY field_order ASC",
-                        $cat->category_code
-                    ));
+                $fields = $wpdb->get_results($wpdb->prepare(
+                    "SELECT field_code, field_name FROM {$this->fields_table} WHERE category_code = %s ORDER BY field_order ASC",
+                    $cat->category_code
+                ));
 
-                    // If fields exist, create male/female sub-structure for each
-                    if ($fields) {
-                        $structure[$cat->category_code] = array();
-                        foreach ($fields as $field) {
-                            $structure[$cat->category_code][$field->field_code] = array(
-                                'laki_laki' => $field->field_name . ' - Laki-laki',
-                                'perempuan' => $field->field_name . ' - Perempuan',
-                            );
-                        }
-                    } else {
-                        // Keep empty category to allow UI to display a proper message
+                // If DB has fields for this category, override the default structure with DB-defined fields
+                if ($fields && count($fields) > 0) {
+                    $structure[$cat->category_code] = array();
+                    foreach ($fields as $field) {
+                        $structure[$cat->category_code][$field->field_code] = array(
+                            'laki_laki' => $field->field_name . ' - Laki-laki',
+                            'perempuan' => $field->field_name . ' - Perempuan',
+                        );
+                    }
+                } else {
+                    // If no DB fields and category not in default, keep it empty so UI can show a helpful message
+                    if (!isset($structure[$cat->category_code])) {
                         $structure[$cat->category_code] = array();
                     }
                 }
@@ -4448,6 +4448,8 @@ class StatisticPlugin
                                     fieldDiv.innerHTML = data.data.html;
                                     dynamicFields.appendChild(fieldDiv);
                                 }
+                                // ensure the freshly loaded category becomes visible
+                                showCategoryFields(category);
                             }
                         })
                         .catch(error => {
