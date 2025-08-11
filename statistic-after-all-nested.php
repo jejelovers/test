@@ -2290,8 +2290,8 @@ class StatisticPlugin
                         ➕ Tambah Kategori Baru
                     </button>
                     <button class="btn-delete" onclick="dropCategoriesTable()"
-                        title="Hapus tabel kategori (statistic_categories)">
-                        🗑️ Hapus Tabel Kategori
+                        title="Hapus tabel kategori dan fields (statistic_categories & statistic_fields)">
+                        🗑️ Hapus Tabel Kategori & Fields
                     </button>
                 </div>
 
@@ -2463,7 +2463,6 @@ class StatisticPlugin
                     </div>
                 </div>
             </div>
-
             <div id="fields-modal" class="modal-overlay">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -2811,7 +2810,7 @@ class StatisticPlugin
 
             // Hapus tabel kategori (hanya table wp_statistic_categories)
             function dropCategoriesTable() {
-                if (!confirm('Apakah Anda yakin ingin menghapus tabel kategori (wp_statistic_categories)?\n\nSemua kategori dan field terkait mungkin menjadi tidak sinkron. Tindakan ini tidak dapat dibatalkan.')) {
+                if (!confirm('Apakah Anda yakin ingin menghapus tabel kategori dan fields (wp_statistic_categories & wp_statistic_fields)?\n\nSemua kategori dan field akan dihapus. Tindakan ini tidak dapat dibatalkan.')) {
                     return;
                 }
                 const btns = document.querySelectorAll('.btn-delete');
@@ -2829,7 +2828,7 @@ class StatisticPlugin
                     .then(data => {
                         if (data.success) {
                             alert('✅ ' + data.data);
-                            location.reload();
+                            window.location.href = '<?php echo admin_url('admin.php?page=statistic'); ?>';
                         } else {
                             alert('❌ ' + data.data);
                         }
@@ -3042,14 +3041,16 @@ class StatisticPlugin
         }
 
         global $wpdb;
-        $table = $this->categories_table; // e.g., wp_statistic_categories
+        $categoriesTable = $this->categories_table; // e.g., wp_statistic_categories
+        $fieldsTable = $this->fields_table; // e.g., wp_statistic_fields
 
-        $result = $wpdb->query("DROP TABLE IF EXISTS {$table}");
+        $resultCategories = $wpdb->query("DROP TABLE IF EXISTS {$categoriesTable}");
+        $resultFields = $wpdb->query("DROP TABLE IF EXISTS {$fieldsTable}");
 
-        if ($result === false) {
-            wp_send_json_error('Gagal menghapus tabel kategori: ' . $wpdb->last_error);
+        if ($resultCategories === false || $resultFields === false) {
+            wp_send_json_error('Gagal menghapus tabel: ' . $wpdb->last_error);
         } else {
-            wp_send_json_success('Tabel kategori berhasil dihapus.');
+            wp_send_json_success('Tabel kategori dan fields berhasil dihapus.');
         }
     }
 
