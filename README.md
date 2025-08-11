@@ -1,0 +1,4 @@
+- all nested tuh yg paling baru sudah dinamis kategori dan nested field
+- before versi yg ga ada dinamis kategori tapi dokumentasinya bagus yg ini
+- statistic doank yg baru dinmis kategori yg kemas
+- 
