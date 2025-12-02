@@ -910,7 +910,7 @@ class StatisticPlugin
                 $html .= '<span class="gender-icon">' . ($gender_key === 'laki_laki' ? '👨' : '👩') . '</span>';
                 $html .= esc_html($gender_key === 'laki_laki' ? 'Laki-laki' : 'Perempuan');
                 $html .= ':</label>';
-                $html .= '<input type="number" id="' . esc_attr($field_name) . '" name="' . esc_attr($field_name) . '" min="0" step="1" class="form-control" value="' . esc_attr($field_value) . '" />';
+                $html .= '<input type="number" id="' . esc_attr($field_name) . '" name="' . esc_attr($field_name) . '" min="0" step="1" class="form-control" placeholder="Masukkan angka" value="' . esc_attr($field_value) . '" />';
                 $html .= '</div>';
             }
 
@@ -1390,7 +1390,7 @@ class StatisticPlugin
 
                         $fields_html .= '<div class="field-group">';
                         $fields_html .= '<label for="' . esc_attr($field_name) . '" class="form-label">' . esc_html($field_label) . ':</label>';
-                        $fields_html .= '<input type="number" id="' . esc_attr($field_name) . '" name="' . esc_attr($field_name) . '" min="0" step="1" class="form-control" value="' . esc_attr($field_value) . '" />';
+                        $fields_html .= '<input type="number" id="' . esc_attr($field_name) . '" name="' . esc_attr($field_name) . '" min="0" step="1" class="form-control" placeholder="Masukkan angka" value="' . esc_attr($field_value) . '" />';
                         $fields_html .= '</div>';
                     }
                 }
@@ -1423,7 +1423,7 @@ class StatisticPlugin
                     $html .= '<div class="rw-header">RW ' . $rw_number . '</div>';
                     $html .= '<div class="form-group">';
                     $html .= '<label class="form-label">Jumlah Penerima RW ' . $rw_number . ':</label>';
-                    $html .= '<input type="number" name="' . $category . '_rw_' . $rw_number . '" min="0" step="1" class="form-control" value="' . esc_attr($value) . '" />';
+                    $html .= '<input type="number" name="' . $category . '_rw_' . $rw_number . '" min="0" step="1" class="form-control" placeholder="Masukkan angka" value="' . esc_attr($value) . '" />';
                     $html .= '</div>';
                     $html .= '</div>';
                     $html .= '<button type="button" class="btn-danger" onclick="removeRW(this)">Hapus</button>';
@@ -1438,7 +1438,7 @@ class StatisticPlugin
             $html .= '<div class="rw-header">RW 1</div>';
             $html .= '<div class="form-group">';
             $html .= '<label class="form-label">Jumlah Penerima RW 1:</label>';
-            $html .= '<input type="number" name="' . $category . '_rw_1" min="0" step="1" class="form-control" />';
+            $html .= '<input type="number" name="' . $category . '_rw_1" min="0" step="1" class="form-control" placeholder="Masukkan angka" />';
             $html .= '</div>';
             $html .= '</div>';
             $html .= '</div>';
@@ -3314,7 +3314,7 @@ class StatisticPlugin
 
                 $html .= '<div class="field-group">';
                 $html .= '<label for="' . esc_attr($field_name) . '" class="form-label">' . esc_html($field->field_name) . ':</label>';
-                $html .= '<input type="number" id="' . esc_attr($field_name) . '" name="' . esc_attr($field_name) . '" min="0" step="1" class="form-control" value="' . esc_attr($field_value) . '" />';
+                $html .= '<input type="number" id="' . esc_attr($field_name) . '" name="' . esc_attr($field_name) . '" min="0" step="1" class="form-control" placeholder="Masukkan angka" value="' . esc_attr($field_value) . '" />';
                 $html .= '</div>';
             }
         }
@@ -4511,7 +4511,7 @@ class StatisticPlugin
                         <div class="rw-header">RW ${rwCount}</div>
                         <div class="field-group">
                             <label class="form-label">Jumlah Penerima RW ${rwCount}:</label>
-                            <input type="number" name="${category}_rw_${rwCount}" min="0" step="1" class="form-control" />
+                            <input type="number" name="${category}_rw_${rwCount}" min="0" step="1" class="form-control" placeholder="Masukkan angka" />
                         </div>
                     </div>
                     <button type="button" class="btn-danger" onclick="removeRW(this)">Hapus</button>
