@@ -1011,7 +1011,7 @@ class StatisticPlugin
 
             /* Input angka tidak perlu selebar 100% */
             .gender-field input[type="number"].form-control {
-                width: 140px;
+                width: clamp(120px, 18vw, 160px);
                 max-width: 100%;
             }
             
@@ -1025,6 +1025,11 @@ class StatisticPlugin
                 .nested-item-content {
                     grid-template-columns: 1fr;
                     gap: 10px;
+                }
+
+                /* Di mobile, input angka lebih nyaman full width */
+                .gender-field input[type="number"].form-control {
+                    width: 100%;
                 }
             }
         </style>';
@@ -2066,7 +2071,7 @@ class StatisticPlugin
 
                 /* Input angka tidak butuh selebar input teks */
                 input[type="number"].form-control {
-                    width: 140px;
+                    width: clamp(120px, 18vw, 160px);
                     max-width: 100%;
                 }
 
@@ -4213,6 +4218,12 @@ class StatisticPlugin
                     box-sizing: border-box;
                 }
 
+                /* Semua input angka dibuat lebih pendek */
+                input[type="number"].form-control {
+                    width: clamp(120px, 18vw, 160px);
+                    max-width: 100%;
+                }
+
                 .form-control:focus,
                 .form-select:focus {
                     outline: none;
@@ -4362,6 +4373,11 @@ class StatisticPlugin
                     }
 
                     .btn-primary {
+                        width: 100%;
+                    }
+
+                    /* Di mobile, input angka lebih nyaman full width */
+                    input[type="number"].form-control {
                         width: 100%;
                     }
                 }
@@ -7222,6 +7238,12 @@ class StatisticPlugin
                 padding: 20px;
                 border-radius: 8px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+
+            /* Semua input angka dibuat lebih pendek */
+            .statistic-form-container input[type="number"].form-control {
+                width: clamp(120px, 18vw, 160px);
+                max-width: 100%;
             }
             
             .rw-container-wrapper {
