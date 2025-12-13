@@ -1008,6 +1008,12 @@ class StatisticPlugin
                 border-radius: 4px;
                 font-size: 13px;
             }
+
+            /* Input angka tidak perlu selebar 100% */
+            .gender-field input[type="number"].form-control {
+                width: 140px;
+                max-width: 100%;
+            }
             
             .gender-field .form-control:focus {
                 outline: none;
@@ -2056,6 +2062,12 @@ class StatisticPlugin
                     border: 1px solid #ddd;
                     border-radius: 4px;
                     box-sizing: border-box;
+                }
+
+                /* Input angka tidak butuh selebar input teks */
+                input[type="number"].form-control {
+                    width: 140px;
+                    max-width: 100%;
                 }
 
                 .form-control:focus {
