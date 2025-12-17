@@ -2051,6 +2051,14 @@ class StatisticPlugin
                 .form-group {
                     margin-bottom: 20px;
                 }
+                
+                /* Layout horizontal untuk form-group dengan input number di RW */
+                .rw-content .form-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: 8px;
+                }
 
                 .form-label {
                     display: block;
@@ -2058,6 +2066,14 @@ class StatisticPlugin
                     font-size: 14px;
                     font-weight: 500;
                     color: #32373c;
+                }
+                
+                /* Label di dalam RW content tidak butuh margin bottom */
+                .rw-content .form-group .form-label {
+                    margin-bottom: 0;
+                    white-space: nowrap;
+                    font-size: 13px;
+                    min-width: fit-content;
                 }
 
                 .form-control {
@@ -4195,6 +4211,14 @@ class StatisticPlugin
                 .form-group {
                     margin-bottom: 20px;
                 }
+                
+                /* Layout horizontal untuk form-group di dalam RW content */
+                .rw-content .form-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: 8px;
+                }
 
                 .form-label {
                     display: block;
@@ -4202,6 +4226,14 @@ class StatisticPlugin
                     font-size: 14px;
                     font-weight: 500;
                     color: #333;
+                }
+                
+                /* Label di dalam RW content disesuaikan */
+                .rw-content .form-group .form-label {
+                    margin-bottom: 0;
+                    white-space: nowrap;
+                    font-size: 13px;
+                    min-width: fit-content;
                 }
 
                 .form-control,
@@ -4257,6 +4289,9 @@ class StatisticPlugin
 
                 .field-group {
                     margin-bottom: 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
                 }
 
                 .field-group:last-child {
@@ -4264,9 +4299,11 @@ class StatisticPlugin
                 }
 
                 .field-group .form-label {
-                    margin-bottom: 5px;
+                    margin-bottom: 0;
                     font-size: 13px;
                     color: #666;
+                    white-space: nowrap;
+                    min-width: fit-content;
                 }
 
                 .checkbox-group {
@@ -4379,6 +4416,19 @@ class StatisticPlugin
                     /* Di mobile, input angka lebih nyaman full width */
                     input[type="number"].form-control {
                         width: 100%;
+                    }
+                    
+                    /* Di mobile, field-group dan form-group kembali ke layout vertikal */
+                    .field-group,
+                    .rw-content .form-group {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 5px;
+                    }
+                    
+                    .field-group .form-label,
+                    .rw-content .form-group .form-label {
+                        margin-bottom: 5px;
                     }
                 }
             </style>
@@ -7300,6 +7350,12 @@ class StatisticPlugin
             
             .btn-danger:hover {
                 background: #c82333;
+            }
+            
+            @media (max-width: 768px) {
+                .statistic-form-container input[type="number"].form-control {
+                    width: 100%;
+                }
             }
         ');
     }
